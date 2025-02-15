@@ -1,13 +1,13 @@
 <?php
-session_start(); // เริ่ม session
+session_start();
+require_once 'db.php';
 
-// ลบข้อมูลทั้งหมดใน session
-session_unset(); 
+if (isset($_SESSION['user_id'])) {
+    logActivity($_SESSION['user_id'], 'LOGOUT', 'ออกจากระบบ');
+}
 
-// ทำลาย session
+// ลบ session
 session_destroy();
-
-// เปลี่ยนเส้นทางไปยังหน้าล็อกอิน
-header('Location: login.php');
+header("Location: login.php");
 exit();
-?>
+?> 
