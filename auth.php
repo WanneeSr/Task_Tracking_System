@@ -5,7 +5,7 @@ require_once $base_path . '/check_token.php';
 
 function checkAuth() {
     if (!isset($_SESSION['user_id'])) {
-        header("Location: /tts-project/login.php");
+        header("Location: /task_tracking_system/login.php");
         exit();
     }
     checkToken();
