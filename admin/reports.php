@@ -56,45 +56,77 @@ if (!$overdue_tasks) {
 }
 ?>
 
-<div class="container mt-4">
-    <h2 class="mb-4">รายงาน</h2>
-
-    <!-- สถิติรายเดือน -->
-    <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">สถิติรายเดือน</h5>
-            <a href="export_report.php?type=monthly" class="btn btn-success btn-sm">
-                <i class="bi bi-file-earmark-excel"></i> Export Excel
-            </a>
+<div class="min-h-screen bg-gray-50 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header Section -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">รายงานภาพรวม</h1>
+            <p class="mt-2 text-sm text-gray-600">ข้อมูลสถิติและรายงานต่างๆ ของระบบ</p>
         </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
+
+        <!-- Monthly Statistics Section -->
+        <div class="bg-white rounded-lg shadow mb-8">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-semibold text-gray-800">สถิติรายเดือน</h2>
+                    <a href="export_report.php?type=monthly" 
+                       class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md transition duration-150 ease-in-out">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Export Excel
+                    </a>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
                         <tr>
-                            <th>เดือน</th>
-                            <th>งานทั้งหมด</th>
-                            <th>เสร็จสิ้น</th>
-                            <th>กำลังดำเนินการ</th>
-                            <th>รอดำเนินการ</th>
-                            <th>อัตราความสำเร็จ</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">เดือน</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">งานทั้งหมด</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">เสร็จสิ้น</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">กำลังดำเนินการ</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รอดำเนินการ</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">อัตราความสำเร็จ</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="bg-white divide-y divide-gray-200">
                         <?php while ($month = $monthly_stats->fetch_assoc()): ?>
-                            <tr>
-                                <td><?php echo date('M Y', strtotime($month['month'] . '-01')); ?></td>
-                                <td><?php echo $month['total_tasks']; ?></td>
-                                <td><?php echo $month['completed_tasks']; ?></td>
-                                <td><?php echo $month['in_progress_tasks']; ?></td>
-                                <td><?php echo $month['pending_tasks']; ?></td>
-                                <td>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    <?php echo date('M Y', strtotime($month['month'] . '-01')); ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <?php echo $month['total_tasks']; ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        <?php echo $month['completed_tasks']; ?>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                        <?php echo $month['in_progress_tasks']; ?>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        <?php echo $month['pending_tasks']; ?>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
                                     <?php 
                                     $success_rate = $month['total_tasks'] > 0 
                                         ? round(($month['completed_tasks'] / $month['total_tasks']) * 100, 1) 
                                         : 0;
-                                    echo $success_rate . '%';
                                     ?>
+                                    <div class="flex items-center">
+                                        <div class="w-16 bg-gray-200 rounded-full h-2.5 mr-2">
+                                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: <?php echo $success_rate; ?>%"></div>
+                                        </div>
+                                        <span class="text-sm text-gray-600"><?php echo $success_rate; ?>%</span>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endwhile; ?>
@@ -102,44 +134,84 @@ if (!$overdue_tasks) {
                 </table>
             </div>
         </div>
-    </div>
 
-    <!-- ประสิทธิภาพของผู้ใช้ -->
-    <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">ประสิทธิภาพของผู้ใช้</h5>
-            <a href="export_report.php?type=performance" class="btn btn-success btn-sm">
-                <i class="bi bi-file-earmark-excel"></i> Export Excel
-            </a>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
+        <!-- User Performance Section -->
+        <div class="bg-white rounded-lg shadow mb-8">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-semibold text-gray-800">ประสิทธิภาพของผู้ใช้</h2>
+                    <a href="export_report.php?type=performance" 
+                       class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Export Excel
+                    </a>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
                         <tr>
-                            <th>ผู้ใช้</th>
-                            <th>งานทั้งหมด</th>
-                            <th>เสร็จสิ้น</th>
-                            <th>กำลังดำเนินการ</th>
-                            <th>รอดำเนินการ</th>
-                            <th>อัตราความสำเร็จ</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ผู้ใช้</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">งานทั้งหมด</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">เสร็จสิ้น</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">กำลังดำเนินการ</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รอดำเนินการ</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">อัตราความสำเร็จ</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="bg-white divide-y divide-gray-200">
                         <?php while ($user = $user_performance->fetch_assoc()): ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($user['username']); ?></td>
-                                <td><?php echo $user['total_assigned']; ?></td>
-                                <td><?php echo $user['completed_tasks']; ?></td>
-                                <td><?php echo $user['in_progress_tasks']; ?></td>
-                                <td><?php echo $user['pending_tasks']; ?></td>
-                                <td>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <span class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                                <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                <?php echo htmlspecialchars($user['username']); ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <?php echo $user['total_assigned']; ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        <?php echo $user['completed_tasks']; ?>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                        <?php echo $user['in_progress_tasks']; ?>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        <?php echo $user['pending_tasks']; ?>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
                                     <?php 
                                     $success_rate = $user['total_assigned'] > 0 
                                         ? round(($user['completed_tasks'] / $user['total_assigned']) * 100, 1) 
                                         : 0;
-                                    echo $success_rate . '%';
                                     ?>
+                                    <div class="flex items-center">
+                                        <div class="w-16 bg-gray-200 rounded-full h-2.5 mr-2">
+                                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: <?php echo $success_rate; ?>%"></div>
+                                        </div>
+                                        <span class="text-sm text-gray-600"><?php echo $success_rate; ?>%</span>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endwhile; ?>
@@ -147,48 +219,60 @@ if (!$overdue_tasks) {
                 </table>
             </div>
         </div>
-    </div>
 
-    <!-- งานที่เลยกำหนด -->
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">งานที่เลยกำหนด</h5>
-            <a href="export_report.php?type=overdue" class="btn btn-success btn-sm">
-                <i class="bi bi-file-earmark-excel"></i> Export Excel
-            </a>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
+        <!-- Overdue Tasks Section -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-semibold text-gray-800">งานที่เลยกำหนด</h2>
+                    <a href="export_report.php?type=overdue" 
+                       class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Export Excel
+                    </a>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
                         <tr>
-                            <th>งาน</th>
-                            <th>ผู้รับผิดชอบ</th>
-                            <th>กำหนดส่ง</th>
-                            <th>เลยกำหนด</th>
-                            <th>สถานะ</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">งาน</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ผู้รับผิดชอบ</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">กำหนดส่ง</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">เลยกำหนด</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สถานะ</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="bg-white divide-y divide-gray-200">
                         <?php while ($task = $overdue_tasks->fetch_assoc()): ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($task['title']); ?></td>
-                                <td><?php echo htmlspecialchars($task['username'] ?? 'ไม่ระบุ'); ?></td>
-                                <td><?php echo date('d/m/Y', strtotime($task['due_date'])); ?></td>
-                                <td>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    <?php echo htmlspecialchars($task['title']); ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <?php echo htmlspecialchars($task['username'] ?? 'ไม่ระบุ'); ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <?php echo date('d/m/Y', strtotime($task['due_date'])); ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
                                     <?php 
                                     $days_overdue = floor((strtotime('now') - strtotime($task['due_date'])) / (60 * 60 * 24));
-                                    echo $days_overdue . ' วัน';
                                     ?>
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        <?php echo $days_overdue; ?> วัน
+                                    </span>
                                 </td>
-                                <td>
-                                    <span class="badge text-bg-<?php 
-                                        echo match($task['status']) {
-                                            'in_progress' => 'warning',
-                                            'pending' => 'danger',
-                                            default => 'secondary'
-                                        };
-                                    ?>">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        <?php echo match($task['status']) {
+                                            'in_progress' => 'bg-yellow-100 text-yellow-800',
+                                            'pending' => 'bg-red-100 text-red-800',
+                                            default => 'bg-gray-100 text-gray-800'
+                                        }; ?>">
                                         <?php 
                                         echo match($task['status']) {
                                             'in_progress' => 'กำลังดำเนินการ',

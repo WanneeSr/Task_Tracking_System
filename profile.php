@@ -1,6 +1,7 @@
 <?php
-session_start();
+include 'header.php';
 require_once 'db.php';
+require_once 'auth.php';
 
 // ตรวจสอบการล็อกอิน
 if (!isset($_SESSION['user_id'])) {
@@ -8,153 +9,164 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+// ตรวจสอบว่ามีการอัปโหลดรูปภาพหรือไม่
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profile_image'])) {
+    $file = $_FILES['profile_image'];
+    $user_id = $_SESSION['user_id'];
+    
+    // ตรวจสอบไฟล์
+    $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+    $max_size = 5 * 1024 * 1024; // 5MB
+    
+    if (in_array($file['type'], $allowed_types) && $file['size'] <= $max_size) {
+        // สร้างชื่อไฟล์ใหม่
+        $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $new_filename = $user_id . '_' . time() . '.' . $extension;
+        
+        // สร้างโฟลเดอร์ถ้ายังไม่มี
+        $upload_dir = 'uploads/profiles/';
+        if (!file_exists($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
+        
+        // อัปโหลดไฟล์
+        if (move_uploaded_file($file['tmp_name'], $upload_dir . $new_filename)) {
+            // อัปเดตฐานข้อมูล
+            $stmt = $conn->prepare("UPDATE users SET profile_image = ? WHERE user_id = ?");
+            $stmt->bind_param("si", $new_filename, $user_id);
+            
+            if ($stmt->execute()) {
+                $_SESSION['profile_image'] = $new_filename;
+                $_SESSION['success'] = "อัปเดตรูปโปรไฟล์สำเร็จ";
+            } else {
+                $_SESSION['error'] = "เกิดข้อผิดพลาดในการอัปเดตฐานข้อมูล";
+            }
+        } else {
+            $_SESSION['error'] = "เกิดข้อผิดพลาดในการอัปโหลดไฟล์";
+        }
+    } else {
+        $_SESSION['error'] = "กรุณาอัปโหลดไฟล์รูปภาพขนาดไม่เกิน 5MB";
+    }
+    
+    header("Location: profile.php");
+    exit();
+}
+
 // ดึงข้อมูลผู้ใช้
 $user_id = $_SESSION['user_id'];
-$sql = "SELECT * FROM users WHERE user_id = ?";
-$stmt = $conn->prepare($sql);
-
-if ($stmt === false) {
-    die("Error preparing statement: " . $conn->error);
-}
-
+$stmt = $conn->prepare("SELECT * FROM users WHERE user_id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
-$result = $stmt->get_result();
-$user = $result->fetch_assoc();
+$user = $stmt->get_result()->fetch_assoc();
 
-// อัพเดตโปรไฟล์
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST['username'];
-    $email = $_POST['email'];
-    
-    $update_sql = "UPDATE users SET username = ?, email = ? WHERE user_id = ?";
-    $update_stmt = $conn->prepare($update_sql);
-    
-    if ($update_stmt === false) {
-        die("Error preparing update statement: " . $conn->error);
-    }
-    
-    $update_stmt->bind_param("ssi", $username, $email, $user_id);
-    
-    if ($update_stmt->execute()) {
-        $success = "อัพเดตข้อมูลสำเร็จ";
-        $_SESSION['username'] = $username;
-        $_SESSION['email'] = $email;
-        $user['username'] = $username;
-        $user['email'] = $email;
-    } else {
-        $error = "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";
-    }
-}
+// ดึงสถิติงานของผู้ใช้
+$tasks_stmt = $conn->prepare("
+    SELECT 
+        COUNT(*) as total_tasks,
+        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_tasks,
+        SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as ongoing_tasks
+    FROM tasks 
+    WHERE assigned_to = ? OR created_by = ?
+");
+$tasks_stmt->bind_param("ii", $user_id, $user_id);
+$tasks_stmt->execute();
+$tasks_stats = $tasks_stmt->get_result()->fetch_assoc();
 ?>
 
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>โปรไฟล์ | <?php echo htmlspecialchars($user['username']); ?></title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-</head>
-<body class="bg-light">
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-        <div class="container">
-            <a class="navbar-brand" href="index.php">
-                <i class="bi bi-house-door"></i>
-            </a>
-            <div class="navbar-nav ms-auto">
-                <span class="nav-item nav-link">
-                    <i class="bi bi-person"></i> <?php echo htmlspecialchars($user['username']); ?>
-                </span>
-                <a class="nav-link text-danger" href="logout.php">
-                    <i class="bi bi-box-arrow-right"></i> ออกจากระบบ
-                </a>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-3xl mx-auto">
+        <!-- โปรไฟล์การ์ด -->
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+            <!-- หัวข้อโปรไฟล์ -->
+            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-8">
+                <div class="flex justify-center">
+                    <div class="relative group">
+                        <img class="h-32 w-32 rounded-full object-cover border-4 border-white shadow-lg" 
+                             src="uploads/profiles/<?php echo $user['profile_image'] ?? 'default-profile.png'; ?>" 
+                             alt="Profile">
+                        <label for="profile_image" class="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-lg cursor-pointer hover:bg-gray-100">
+                            <i class="bi bi-camera-fill text-gray-600"></i>
+                        </label>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <h2 class="text-2xl font-bold text-white"><?php echo htmlspecialchars($user['username']); ?></h2>
+                    <p class="text-indigo-100"><?php echo ucfirst($user['role']); ?></p>
+                </div>
             </div>
-        </div>
-    </nav>
 
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card shadow">
-                    <!-- Profile Header -->
-                    <div class="card-header bg-primary text-white p-4">
-                        <div class="d-flex align-items-center">
-                            <div class="rounded-circle bg-white text-primary p-3 me-3">
-                                <i class="bi bi-person-circle fs-1"></i>
-                            </div>
-                            <div>
-                                <h4 class="mb-1"><?php echo htmlspecialchars($user['username']); ?></h4>
-                                <p class="mb-0"><?php echo htmlspecialchars($user['email']); ?></p>
-                                <small>สถานะ: <?php echo htmlspecialchars($user['role']); ?></small>
-                            </div>
+            <!-- สถิติผู้ใช้ -->
+            <div class="grid grid-cols-3 gap-4 p-4 bg-gray-50">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-indigo-600"><?php echo $tasks_stats['total_tasks']; ?></div>
+                    <div class="text-sm text-gray-500">งานทั้งหมด</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600"><?php echo $tasks_stats['completed_tasks']; ?></div>
+                    <div class="text-sm text-gray-500">งานที่เสร็จแล้ว</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600"><?php echo $tasks_stats['ongoing_tasks']; ?></div>
+                    <div class="text-sm text-gray-500">งานที่กำลังทำ</div>
+                </div>
+            </div>
+
+            <!-- ข้อมูลผู้ใช้และฟอร์มแก้ไข -->
+            <div class="p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">ข้อมูลส่วนตัว</h3>
+                <form action="profile.php" method="POST" enctype="multipart/form-data" class="space-y-6">
+                    <!-- ซ่อน input file ไว้ -->
+                    <input type="file" id="profile_image" name="profile_image" accept="image/*" class="hidden" 
+                           onchange="this.form.submit()">
+
+                    <!-- ข้อมูลอื่นๆ -->
+                    <div class="grid grid-cols-1 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">อีเมล</label>
+                            <input type="email" value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>" 
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" 
+                                   disabled>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">วันที่สมัคร</label>
+                            <input type="text" value="<?php echo date('d/m/Y', strtotime($user['created_at'])); ?>" 
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" 
+                                   disabled>
                         </div>
                     </div>
+                </form>
+            </div>
+        </div>
 
-                    <div class="card-body p-4">
-                        <?php if (isset($success)): ?>
-                            <div class="alert alert-success" role="alert">
-                                <i class="bi bi-check-circle me-2"></i><?php echo $success; ?>
-                            </div>
-                        <?php endif; ?>
-
-                        <?php if (isset($error)): ?>
-                            <div class="alert alert-danger" role="alert">
-                                <i class="bi bi-exclamation-circle me-2"></i><?php echo $error; ?>
-                            </div>
-                        <?php endif; ?>
-
-                        <form method="POST" action="">
-                            <div class="mb-3">
-                                <label for="username" class="form-label">ชื่อผู้ใช้</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="bi bi-person"></i>
-                                    </span>
-                                    <input type="text" class="form-control" id="username" name="username" 
-                                           value="<?php echo htmlspecialchars($user['username']); ?>" required>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="email" class="form-label">อีเมล</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="bi bi-envelope"></i>
-                                    </span>
-                                    <input type="email" class="form-control" id="email" name="email" 
-                                           value="<?php echo htmlspecialchars($user['email']); ?>" required>
-                                </div>
-                            </div>
-
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-save"></i> บันทึกการเปลี่ยนแปลง
-                                </button>
-                            </div>
-                        </form>
-
-                        <hr class="my-4">
-
-                        <div class="d-flex justify-content-center gap-3">
-                            <a href="change_password.php" class="btn btn-outline-primary">
-                                <i class="bi bi-key"></i> เปลี่ยนรหัสผ่าน
-                            </a>
-                            <a href="settings.php" class="btn btn-outline-secondary">
-                                <i class="bi bi-gear"></i> ตั้งค่า
-                            </a>
-                        </div>
+        <!-- กล่องแสดงคำแนะนำ -->
+        <div class="mt-6 bg-blue-50 rounded-lg p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="bi bi-info-circle-fill text-blue-400"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-blue-800">คำแนะนำ</h3>
+                    <div class="mt-2 text-sm text-blue-700">
+                        <p>คลิกที่ไอคอนกล้องเพื่อเปลี่ยนรูปโปรไฟล์ของคุณ</p>
+                        <p>รองรับไฟล์ภาพ PNG, JPG และ GIF ขนาดไม่เกิน 5MB</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html> 
+<script>
+// เพิ่ม preview รูปภาพก่อนอัปโหลด
+document.getElementById('profile_image').addEventListener('change', function(e) {
+    if (e.target.files && e.target.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.querySelector('img.rounded-full').src = e.target.result;
+        }
+        reader.readAsDataURL(e.target.files[0]);
+    }
+});
+</script>
+
+<?php include 'footer.php'; ?> 

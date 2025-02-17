@@ -3,7 +3,7 @@
 error_reporting(0);
 ini_set('display_errors', 0);
 
-// ต้องกำหนด header ก่อนที่จะมี output ใดๆ
+// กำหนด header เป็น JSON
 header('Content-Type: application/json; charset=utf-8');
 
 // เริ่ม session ถ้ายังไม่ได้เริ่ม
@@ -12,6 +12,10 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once '../db.php';
+require_once '../auth.php';
+
+// ตรวจสอบสิทธิ์ admin
+checkAdmin();
 
 // ตรวจสอบการเชื่อมต่อฐานข้อมูล
 if (!isset($conn)) {
@@ -26,63 +30,39 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    // ตรวจสอบข้อมูลที่จำเป็น
-    if (!isset($_POST['task_id']) || !isset($_POST['title'])) {
-        throw new Exception('Missing required fields');
+    // ตรวจสอบว่ามี task_id
+    if (!isset($_POST['task_id'])) {
+        throw new Exception('Task ID is required');
     }
 
-    // เตรียมข้อมูล
     $task_id = intval($_POST['task_id']);
-    $title = trim($_POST['title']);
-    $description = trim($_POST['description'] ?? '');
-    $assigned_to = !empty($_POST['assigned_to']) ? intval($_POST['assigned_to']) : null;
-    $status = trim($_POST['status']);
-    $priority = trim($_POST['priority']);
-    $due_date = trim($_POST['due_date']);
 
     // เตรียม SQL query
-    $sql = "UPDATE tasks SET 
-            title = ?, 
-            description = ?, 
-            assigned_to = ?, 
-            status = ?, 
-            priority = ?, 
-            due_date = ?,
-            updated_at = CURRENT_TIMESTAMP
-            WHERE task_id = ?";
-
+    $sql = "DELETE FROM tasks WHERE task_id = ?";
     $stmt = $conn->prepare($sql);
     
     if (!$stmt) {
         throw new Exception($conn->error);
     }
 
-    // Bind parameters
-    $stmt->bind_param("ssssssi", 
-        $title, 
-        $description, 
-        $assigned_to, 
-        $status, 
-        $priority, 
-        $due_date, 
-        $task_id
-    );
+    // Bind parameter
+    $stmt->bind_param("i", $task_id);
 
     // Execute query
     if (!$stmt->execute()) {
         throw new Exception($stmt->error);
     }
 
-    // ตรวจสอบว่ามีการอัพเดทจริง
+    // ตรวจสอบว่ามีการลบจริง
     if ($stmt->affected_rows > 0) {
         echo json_encode([
             'success' => true,
-            'message' => 'Task updated successfully'
+            'message' => 'Task deleted successfully'
         ]);
     } else {
         echo json_encode([
             'success' => false,
-            'message' => 'No changes made or task not found'
+            'message' => 'Task not found or already deleted'
         ]);
     }
 
@@ -96,5 +76,4 @@ try {
     if (isset($conn)) {
         $conn->close();
     }
-}
-?> 
+} 

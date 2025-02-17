@@ -1,60 +1,133 @@
 <?php
-
-include 'header_index.php'; // รวมส่วนหัวของเว็บไซต์
+include 'header.php';
 ?>
 
 <!-- Hero Section -->
-<section class="bg-primary text-white text-center py-5">
-    <div class="container">
-        <h1 class="display-4">ยินดีต้อนรับสู่ระบบติดตามงาน</h1>
-        <p class="lead">จัดการโปรเจคและงานของคุณได้อย่างมีประสิทธิภาพ</p>
-        <a href="login.php" class="btn btn-light btn-lg">เข้าสู่ระบบ</a>
-    </div>
-</section>
-
-<!-- Features Section -->
-<section class="py-5">
-    <div class="container">
-        <div class="row text-center">
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <i class="fas fa-tachometer-alt fa-3x mb-3 text-primary"></i>
-                        <h5 class="card-title">Dashboard</h5>
-                        <p class="card-text">ดูภาพรวมของโปรเจคและงานทั้งหมดในระบบ</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <i class="fas fa-project-diagram fa-3x mb-3 text-success"></i>
-                        <h5 class="card-title">จัดการโปรเจค</h5>
-                        <p class="card-text">สร้าง แก้ไข และลบโปรเจคได้อย่างง่ายดาย</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <i class="fas fa-tasks fa-3x mb-3 text-warning"></i>
-                        <h5 class="card-title">จัดการงาน</h5>
-                        <p class="card-text">มอบหมายงานและติดตามความคืบหน้าได้ทันที</p>
-                    </div>
-                </div>
+<div class="bg-gradient-to-r from-indigo-600 to-blue-500">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <div class="text-center">
+            <h1 class="text-4xl font-extrabold text-white sm:text-5xl md:text-6xl">
+                ระบบจัดการงานที่ทันสมัย
+            </h1>
+            <p class="mt-3 max-w-md mx-auto text-base text-indigo-100 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+                จัดการงานของคุณอย่างมีประสิทธิภาพ ติดตามความคืบหน้า และทำงานร่วมกันได้ดียิ่งขึ้น
+            </p>
+            <div class="mt-10 flex justify-center gap-4">
+                <?php if (!isset($_SESSION['user_id'])): ?>
+                    <a href="login.php" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-white hover:bg-indigo-50">
+                        เข้าสู่ระบบ
+                    </a>
+                    <a href="register.php" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-800 hover:bg-indigo-700">
+                        เริ่มต้นใช้งานฟรี
+                    </a>
+                <?php else: ?>
+                    <a href="dashboard.php" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-800 hover:bg-indigo-700">
+                        ไปที่แดชบอร์ด
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
     </div>
-</section>
+</div>
 
-<!-- Call to Action Section -->
-<section class="bg-light py-5">
-    <div class="container text-center">
-        <h2 class="mb-4">พร้อมเริ่มต้นใช้งานหรือยัง?</h2>
-        <a href="login.php" class="btn btn-primary btn-lg">เข้าสู่ระบบตอนนี้</a>
+<!-- Features Section -->
+<div class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h2 class="text-3xl font-extrabold text-gray-900">
+                คุณสมบัติเด่น
+            </h2>
+            <p class="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
+                ทุกฟีเจอร์ที่คุณต้องการในการจัดการงาน
+            </p>
+        </div>
+
+        <div class="mt-16 grid grid-cols-1 gap-8 md:grid-cols-3">
+            <!-- Feature 1: Kanban -->
+            <a href="/task_tracking_system/kanban.php" class="group">
+                <div class="relative p-6 bg-white rounded-lg shadow-sm group-hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 rounded-full bg-indigo-100 group-hover:bg-indigo-200 flex items-center justify-center mb-4 transition-colors">
+                        <i class="bi bi-kanban text-2xl text-indigo-600"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">จัดการงานแบบ Kanban</h3>
+                    <p class="mt-2 text-base text-gray-500">
+                        จัดการงานด้วยระบบ Kanban ที่ใช้งานง่าย ติดตามความคืบหน้าได้ทันที
+                    </p>
+                </div>
+            </a>
+
+            <!-- Feature 2: Team Collaboration -->
+            <a href="/task_tracking_system/team.php" class="group">
+                <div class="relative p-6 bg-white rounded-lg shadow-sm group-hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 rounded-full bg-indigo-100 group-hover:bg-indigo-200 flex items-center justify-center mb-4 transition-colors">
+                        <i class="bi bi-people text-2xl text-indigo-600"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">ทำงานร่วมกันเป็นทีม</h3>
+                    <p class="mt-2 text-base text-gray-500">
+                        แชร์งานและทำงานร่วมกันกับทีมได้อย่างมีประสิทธิภาพ
+                    </p>
+                </div>
+            </a>
+
+            <!-- Feature 3: Reports -->
+            <a href="/task_tracking_system/reports.php" class="group">
+                <div class="relative p-6 bg-white rounded-lg shadow-sm group-hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 rounded-full bg-indigo-100 group-hover:bg-indigo-200 flex items-center justify-center mb-4 transition-colors">
+                        <i class="bi bi-graph-up text-2xl text-indigo-600"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">รายงานและการวิเคราะห์</h3>
+                    <p class="mt-2 text-base text-gray-500">
+                        ดูรายงานและวิเคราะห์ประสิทธิภาพการทำงานได้แบบเรียลไทม์
+                    </p>
+                </div>
+            </a>
+        </div>
     </div>
-</section>
+</div>
 
-<?php
-include 'footer_index.php'; // รวมส่วนท้ายของเว็บไซต์
-?>
+<!-- Stats Section -->
+<div class="bg-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 gap-8 md:grid-cols-3 text-center">
+            <div>
+                <div class="text-4xl font-extrabold text-indigo-600">500+</div>
+                <div class="mt-2 text-lg text-gray-600">ผู้ใช้งาน</div>
+            </div>
+            <div>
+                <div class="text-4xl font-extrabold text-indigo-600">10,000+</div>
+                <div class="mt-2 text-lg text-gray-600">งานที่สำเร็จ</div>
+            </div>
+            <div>
+                <div class="text-4xl font-extrabold text-indigo-600">98%</div>
+                <div class="mt-2 text-lg text-gray-600">ความพึงพอใจ</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="bg-indigo-700">
+    <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h2 class="text-3xl font-extrabold text-white sm:text-4xl">
+                พร้อมเริ่มต้นใช้งานหรือยัง?
+            </h2>
+            <p class="mt-4 text-lg text-indigo-100">
+                เริ่มต้นใช้งานได้ฟรีวันนี้ ไม่มีค่าใช้จ่ายซ่อนเร้น
+            </p>
+            <div class="mt-8">
+                <?php if (!isset($_SESSION['user_id'])): ?>
+                    <a href="register.php" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-white hover:bg-indigo-50">
+                        สมัครใช้งานฟรี
+                    </a>
+                <?php else: ?>
+                    <a href="dashboard.php" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-white hover:bg-indigo-50">
+                        ไปที่แดชบอร์ด
+                    </a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php include 'footer.php'; ?>

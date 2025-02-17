@@ -6,7 +6,7 @@ function checkToken() {
     global $conn;
     
     if (!isset($_SESSION['token'])) {
-        header("Location: /tts-project/login.php");
+        header("Location: /task_tracking_system/login.php");
         exit();
     }
 
@@ -22,7 +22,7 @@ function checkToken() {
     if ($result->num_rows === 0) {
         // ถ้า token ไม่ถูกต้องหรือหมดอายุ
         session_destroy();
-        header("Location: /tts-project/login.php");
+        header("Location: /task_tracking_system/login.php");
         exit();
     }
 

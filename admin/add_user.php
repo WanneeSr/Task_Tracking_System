@@ -4,60 +4,87 @@ require_once '../db.php';
 require_once '../auth.php';
 checkAdmin();
 
+header('Content-Type: application/json');
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $password = trim($_POST['password'] ?? '');
-    $confirm_password = trim($_POST['confirm_password'] ?? '');
-    $role = $_POST['role'] ?? '';
+    $response = ['success' => false, 'message' => ''];
 
-    $errors = [];
-
-    // ตรวจสอบข้อมูล
-    if (empty($username) || empty($email) || empty($password) || empty($role)) {
-        $errors[] = "กรุณากรอกข้อมูลให้ครบถ้วน";
-    }
-
-    if (empty($confirm_password)) {
-        $errors[] = "กรุณายืนยันรหัสผ่าน";
-    } elseif ($password !== $confirm_password) {
-        $errors[] = "รหัสผ่านไม่ตรงกัน";
-    }
-
-    // ตรวจสอบว่า username ซ้ำหรือไม่
-    $check_sql = "SELECT user_id FROM users WHERE username = ?";
-    $stmt = $conn->prepare($check_sql);
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    if ($stmt->get_result()->num_rows > 0) {
-        $errors[] = "ชื่อผู้ใช้นี้ถูกใช้งานแล้ว";
-    }
-
-    // ตรวจสอบว่า email ซ้ำหรือไม่
-    $check_sql = "SELECT user_id FROM users WHERE email = ?";
-    $stmt = $conn->prepare($check_sql);
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    if ($stmt->get_result()->num_rows > 0) {
-        $errors[] = "อีเมลนี้ถูกใช้งานแล้ว";
-    }
-
-    if (empty($errors)) {
-        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-        
-        $sql = "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ssss", $username, $email, $hashed_password, $role);
-
-        if ($stmt->execute()) {
-            logActivity($_SESSION['user_id'], 'CREATE', "เพิ่มผู้ใช้ใหม่: $username");
-            $_SESSION['success'] = "เพิ่มผู้ใช้ใหม่เรียบร้อยแล้ว";
-            header("Location: users.php");
-            exit();
-        } else {
-            $errors[] = "เกิดข้อผิดพลาด: " . $conn->error;
+    try {
+        // ตรวจสอบการเชื่อมต่อฐานข้อมูล
+        if ($conn->connect_error) {
+            throw new Exception("การเชื่อมต่อฐานข้อมูลล้มเหลว");
         }
+
+        // ตรวจสอบข้อมูลที่ส่งมา
+        if (empty($_POST['username']) || empty($_POST['email']) || empty($_POST['password']) || empty($_POST['role'])) {
+            throw new Exception("กรุณากรอกข้อมูลให้ครบถ้วน");
+        }
+
+        $username = $conn->real_escape_string(trim($_POST['username']));
+        $email = $conn->real_escape_string(trim($_POST['email']));
+        $password = trim($_POST['password']);
+        $role = $conn->real_escape_string(trim($_POST['role']));
+
+        // ตรวจสอบความยาวรหัสผ่าน
+        if (strlen($password) < 6) {
+            throw new Exception('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+        }
+
+        // ตรวจสอบรูปแบบอีเมล
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new Exception('รูปแบบอีเมลไม่ถูกต้อง');
+        }
+
+        // ตรวจสอบบทบาทที่ถูกต้อง
+        $allowed_roles = ['admin', 'manager', 'employee'];
+        if (!in_array($role, $allowed_roles)) {
+            throw new Exception('บทบาทไม่ถูกต้อง');
+        }
+
+        // ตรวจสอบว่ามีชื่อผู้ใช้หรืออีเมลนี้ในระบบแล้วหรือไม่
+        $check_query = "SELECT * FROM users WHERE username = '$username' OR email = '$email'";
+        $check_result = $conn->query($check_query);
+
+        if ($check_result->num_rows > 0) {
+            throw new Exception("ชื่อผู้ใช้หรืออีเมลนี้มีในระบบแล้ว");
+        }
+
+        // เข้ารหัสรหัสผ่าน
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+        // เพิ่มผู้ใช้ใหม่
+        $insert_query = "INSERT INTO users (username, email, password, role, created_at) 
+                        VALUES ('$username', '$email', '$hashed_password', '$role', NOW())";
+
+        if ($conn->query($insert_query)) {
+            $new_user_id = $conn->insert_id;
+            
+            // บันทึก activity log
+            $admin_id = $_SESSION['user_id'];
+            $log_description = "เพิ่มผู้ใช้ใหม่: $username";
+            $log_query = "INSERT INTO activity_logs (user_id, action, description, created_at) 
+                         VALUES ($admin_id, 'add_user', '$log_description', NOW())";
+            $conn->query($log_query);
+
+            $response['success'] = true;
+            $response['message'] = "เพิ่มผู้ใช้ '$username' สำเร็จ";
+            $response['user'] = [
+                'id' => $new_user_id,
+                'username' => $username,
+                'email' => $email,
+                'role' => $role
+            ];
+        } else {
+            throw new Exception("ไม่สามารถเพิ่มผู้ใช้ได้");
+        }
+
+    } catch (Exception $e) {
+        $response['message'] = $e->getMessage();
+        error_log("Error adding user: " . $e->getMessage());
     }
+
+    echo json_encode($response);
+    exit;
 }
 ?>
 
@@ -124,14 +151,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <input type="password" class="form-control" id="password" name="password" required>
                             <div class="invalid-feedback">
                                 กรุณากรอกรหัสผ่าน
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="confirm_password" class="form-label">ยืนยันรหัสผ่าน</label>
-                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
-                            <div class="invalid-feedback">
-                                กรุณายืนยันรหัสผ่าน
                             </div>
                         </div>
 
