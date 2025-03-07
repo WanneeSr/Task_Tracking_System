@@ -28,7 +28,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <div class="flex">
                     <!-- Logo -->
                     <div class="flex-shrink-0 flex items-center">
-                        <a href="/task_tracking_system" class="text-xl font-bold text-indigo-600">
+                        <a href="/task_tracking_system/admin/index.php" class="text-xl font-bold text-indigo-600">
                             <i class="bi bi-kanban"></i> Task Tracking
                         </a>
                     </div>

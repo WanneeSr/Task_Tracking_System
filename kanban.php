@@ -113,7 +113,7 @@ while ($task = $result->fetch_assoc()) {
                             <p class="text-sm text-gray-500 mt-1"><?php echo htmlspecialchars($task['description']); ?></p>
                             <div class="mt-2 flex justify-between items-center">
                                 <span class="text-xs text-gray-500">
-                                    เสร็จเมื่อ: <?php echo date('d/m/Y', strtotime($task['completed_at'])); ?>
+                                    เสร็จเมื่อ: <?php echo date('d/m/Y', strtotime($task['updated_at'])); ?>
                                 </span>
                                 <a href="view_task.php?id=<?php echo $task['task_id']; ?>" 
                                    class="text-indigo-600 hover:text-indigo-900 text-sm">

@@ -1,5 +1,4 @@
 <?php
-include '../header.php';
 require_once '../db.php';
 require_once '../auth.php';
 checkAdmin();
@@ -156,6 +155,11 @@ switch ($type) {
         break;
 
     default:
-        die("ไม่พบประเภทรายงานที่ระบุ");
+        include '../header.php';
+        echo '<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <strong class="font-bold">ข้อผิดพลาด!</strong>
+                <span class="block sm:inline">ไม่พบประเภทรายงานที่ระบุ</span>
+              </div>';
+        break;
 }
 ?> 

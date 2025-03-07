@@ -1,73 +1,72 @@
 <?php
-session_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 require_once 'db.php';
 
-// ถ้ามีการล็อกอินอยู่แล้ว ให้ไปที่หน้า index.php
-if (isset($_SESSION['user_id'])) {
-    header('Location: /task_tracking_system/index.php');
-    exit();
-}
+session_start();
+
+$error = '';
+$success = '';
 
 // ถ้ามีการ submit form
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $username = trim($_POST['username']);
     $email = trim($_POST['email']);
-    $password = $_POST['password'];
-    $confirm_password = $_POST['confirm_password'];
-    
+    $password = trim($_POST['password']);
+    $confirm_password = trim($_POST['confirm_password']);
     $errors = [];
 
-    // ตรวจสอบข้อมูล
-    if (empty($username)) {
-        $errors[] = "กรุณากรอกชื่อผู้ใช้";
-    } elseif (strlen($username) < 3) {
-        $errors[] = "ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร";
-    }
-
+    // ตรวจสอบอีเมล
     if (empty($email)) {
         $errors[] = "กรุณากรอกอีเมล";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "รูปแบบอีเมลไม่ถูกต้อง";
     }
 
+    // ตรวจสอบรหัสผ่าน
     if (empty($password)) {
         $errors[] = "กรุณากรอกรหัสผ่าน";
-    } elseif (strlen($password) < 6) {
-        $errors[] = "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร";
+    } elseif (strlen($password) < 8) {
+        $errors[] = "รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร";
+    } elseif (!preg_match('/[A-Z]/', $password)) {
+        $errors[] = "รหัสผ่านต้องมีตัวพิมพ์ใหญ่อย่างน้อย 1 ตัว";
+    } elseif (!preg_match('/[a-z]/', $password)) {
+        $errors[] = "รหัสผ่านต้องมีตัวพิมพ์เล็กอย่างน้อย 1 ตัว";
+    } elseif (!preg_match('/[0-9]/', $password)) {
+        $errors[] = "รหัสผ่านต้องมีตัวเลขอย่างน้อย 1 ตัว";
+    } elseif (!preg_match('/[@#$%]/', $password)) {
+        $errors[] = "รหัสผ่านต้องมีอักขระพิเศษ (@#$%) อย่างน้อย 1 ตัว";
     }
 
+    // ตรวจสอบการยืนยันรหัสผ่าน
     if ($password !== $confirm_password) {
         $errors[] = "รหัสผ่านไม่ตรงกัน";
     }
 
-    // ตรวจสอบว่ามี username หรือ email ซ้ำหรือไม่
     if (empty($errors)) {
-        $sql = "SELECT COUNT(*) as count FROM users WHERE username = ? OR email = ?";
+        // ตรวจสอบว่ามีอีเมลนี้ในระบบหรือไม่
+        $sql = "SELECT user_id FROM users WHERE email = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ss", $username, $email);
+        $stmt->bind_param("s", $email);
         $stmt->execute();
-        $result = $stmt->get_result()->fetch_assoc();
+        $result = $stmt->get_result();
         
-        if ($result['count'] > 0) {
-            $errors[] = "ชื่อผู้ใช้หรืออีเมลนี้มีผู้ใช้งานแล้ว";
-        }
-    }
-
-    // ถ้าไม่มี error ให้บันทึกข้อมูล
-    if (empty($errors)) {
-        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-        $role = 'employee'; // กำหนดค่าเริ่มต้นเป็น employee
-        
-        $sql = "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ssss", $username, $email, $hashed_password, $role);
-        
-        if ($stmt->execute()) {
-            $_SESSION['success'] = "สมัครสมาชิกสำเร็จ กรุณาเข้าสู่ระบบ";
-            header('Location: login.php');
-            exit();
+        if ($result->num_rows === 0) {
+            $errors[] = "ไม่พบอีเมลนี้ในระบบ";
         } else {
-            $errors[] = "เกิดข้อผิดพลาดในการบันทึกข้อมูล: " . $conn->error;
+            $user = $result->fetch_assoc();
+            
+            // อัปเดตรหัสผ่าน
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            $sql = "UPDATE users SET password = ? WHERE user_id = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("si", $hashed_password, $user['user_id']);
+            
+            if ($stmt->execute()) {
+                $success = "ตั้งรหัสผ่านใหม่เรียบร้อยแล้ว กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่";
+                header("refresh:3;url=login.php");
+            } else {
+                $errors[] = "เกิดข้อผิดพลาดในการอัปเดตรหัสผ่าน";
+            }
         }
     }
 }
@@ -78,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>สมัครสมาชิก - ระบบติดตามงาน</title>
+    <title>ตั้งรหัสผ่านใหม่ - ระบบติดตามงาน</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -99,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="min-h-screen flex flex-col items-center justify-center p-4">
         <!-- Main Container -->
         <div class="w-full max-w-md">
-            <!-- Register Card -->
+            <!-- Reset Password Card -->
             <div class="glass-effect rounded-3xl shadow-2xl p-8 space-y-8 border border-white/20">
                 <!-- Logo & Title -->
                 <div class="text-center space-y-2">
@@ -107,15 +106,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <div class="p-3 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 shadow-lg">
                             <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                      d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z">
+                                      d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z">
                                 </path>
                             </svg>
                         </div>
                     </div>
                     <h2 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
-                        สมัครสมาชิก
+                        ตั้งรหัสผ่านใหม่
                     </h2>
-                    <p class="text-gray-500">สร้างบัญชีใหม่สำหรับระบบติดตามงาน</p>
+                    <p class="text-gray-500">กรอกอีเมลและรหัสผ่านใหม่สำหรับบัญชีของคุณ</p>
                 </div>
 
                 <?php if (!empty($errors)): ?>
@@ -141,32 +140,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
                 <?php endif; ?>
 
-                <!-- Register Form -->
-                <form method="POST" class="space-y-6">
-                    <!-- Username Field -->
-                    <div class="space-y-2">
-                        <label for="username" class="block text-sm font-medium text-gray-700">
-                            ชื่อผู้ใช้
-                        </label>
-                        <div class="relative group">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="h-5 w-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" 
-                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <?php if (!empty($success)): ?>
+                <div class="animate-bounce-in">
+                    <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-xl">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
+                                          d="M5 13l4 4L19 7">
                                     </path>
                                 </svg>
                             </div>
-                            <input type="text" id="username" name="username" required 
-                                   class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl 
-                                          text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 
-                                          focus:ring-indigo-500 focus:border-transparent transition-all
-                                          bg-white/50 backdrop-blur-sm"
-                                   value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>"
-                                   placeholder="กรอกชื่อผู้ใช้">
+                            <div class="ml-3">
+                                <p class="text-sm text-green-700">
+                                    <?php echo htmlspecialchars($success); ?>
+                                </p>
+                            </div>
                         </div>
                     </div>
+                </div>
+                <?php endif; ?>
 
+                <?php if (empty($success)): ?>
+                <!-- Reset Password Form -->
+                <form method="POST" class="space-y-6">
                     <!-- Email Field -->
                     <div class="space-y-2">
                         <label for="email" class="block text-sm font-medium text-gray-700">
@@ -194,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <!-- Password Field -->
                     <div class="space-y-2">
                         <label for="password" class="block text-sm font-medium text-gray-700">
-                            รหัสผ่าน
+                            รหัสผ่านใหม่
                         </label>
                         <div class="relative group">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -206,18 +203,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 </svg>
                             </div>
                             <input type="password" id="password" name="password" required 
-                                   class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl 
+                                   class="block w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-xl 
                                           text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 
                                           focus:ring-indigo-500 focus:border-transparent transition-all
                                           bg-white/50 backdrop-blur-sm"
-                                   placeholder="กรอกรหัสผ่าน">
+                                   placeholder="กรอกรหัสผ่านใหม่">
+                            <button type="button" onclick="togglePassword('password')" 
+                                    class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                <svg id="password-eye" class="h-5 w-5 text-gray-400 hover:text-gray-600 cursor-pointer" 
+                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
+                                    </path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                    </path>
+                                </svg>
+                                <svg id="password-eye-slash" class="h-5 w-5 text-gray-400 hover:text-gray-600 cursor-pointer hidden" 
+                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21">
+                                    </path>
+                                </svg>
+                            </button>
                         </div>
+                        <p class="text-xs text-gray-500">
+                            รหัสผ่านต้องมีตัวพิมพ์ใหญ่ ตัวพิมพ์เล็ก ตัวเลข และอักขระพิเศษ (@#$%) อย่างน้อย 1 ตัว
+                        </p>
                     </div>
 
                     <!-- Confirm Password Field -->
                     <div class="space-y-2">
                         <label for="confirm_password" class="block text-sm font-medium text-gray-700">
-                            ยืนยันรหัสผ่าน
+                            ยืนยันรหัสผ่านใหม่
                         </label>
                         <div class="relative group">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -229,11 +247,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 </svg>
                             </div>
                             <input type="password" id="confirm_password" name="confirm_password" required 
-                                   class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl 
+                                   class="block w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-xl 
                                           text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 
                                           focus:ring-indigo-500 focus:border-transparent transition-all
                                           bg-white/50 backdrop-blur-sm"
-                                   placeholder="กรอกรหัสผ่านอีกครั้ง">
+                                   placeholder="ยืนยันรหัสผ่านใหม่">
+                            <button type="button" onclick="togglePassword('confirm_password')" 
+                                    class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                <svg id="confirm_password-eye" class="h-5 w-5 text-gray-400 hover:text-gray-600 cursor-pointer" 
+                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
+                                    </path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                    </path>
+                                </svg>
+                                <svg id="confirm_password-eye-slash" class="h-5 w-5 text-gray-400 hover:text-gray-600 cursor-pointer hidden" 
+                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21">
+                                    </path>
+                                </svg>
+                            </button>
                         </div>
                     </div>
 
@@ -246,19 +282,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                    transform transition-all hover:-translate-y-0.5 hover:shadow-lg">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z">
+                                  d="M5 13l4 4L19 7">
                             </path>
                         </svg>
-                        สมัครสมาชิก
+                        ตั้งรหัสผ่านใหม่
                     </button>
                 </form>
+                <?php endif; ?>
 
                 <!-- Login Link -->
                 <div class="text-center">
                     <p class="text-sm text-gray-600">
-                        มีบัญชีอยู่แล้ว? 
+                        ต้องการความช่วยเหลือเพิ่มเติม? 
                         <a href="login.php" class="font-medium text-indigo-600 hover:text-indigo-500">
-                            เข้าสู่ระบบ
+                            ติดต่อผู้ดูแลระบบ
                         </a>
                     </p>
                 </div>
@@ -272,5 +309,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
         </div>
     </div>
+
+    <script>
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const eyeIcon = document.getElementById(inputId + '-eye');
+            const eyeSlashIcon = document.getElementById(inputId + '-eye-slash');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeIcon.classList.add('hidden');
+                eyeSlashIcon.classList.remove('hidden');
+            } else {
+                input.type = 'password';
+                eyeIcon.classList.remove('hidden');
+                eyeSlashIcon.classList.add('hidden');
+            }
+        }
+    </script>
 </body>
-</html>
+</html> 
