@@ -14,7 +14,7 @@ $manager_id = $_SESSION['user_id'];
 
 // ลบงานเฉพาะของ manager คนนี้
 $sql = "DELETE FROM tasks WHERE task_id = ? AND created_by = ?";
-$stmt = $conn->prepare($sql);
+$stmt = $mysqli->prepare($sql);
 $stmt->bind_param("ii", $task_id, $manager_id);
 
 if ($stmt->execute()) {
@@ -24,7 +24,7 @@ if ($stmt->execute()) {
         $_SESSION['error'] = "ไม่พบงานที่ระบุ หรือคุณไม่มีสิทธิ์ลบงานนี้";
     }
 } else {
-    $_SESSION['error'] = "เกิดข้อผิดพลาด: " . $conn->error;
+    $_SESSION['error'] = "เกิดข้อผิดพลาด: " . $mysqli->error;
 }
 
 header('Location: tasks.php'); 

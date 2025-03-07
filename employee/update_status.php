@@ -22,7 +22,7 @@ if (!$task_id || !$status) {
 
 // ตรวจสอบว่างานนี้เป็นของพนักงานคนนี้หรือไม่
 $check_sql = "SELECT assigned_to FROM tasks WHERE task_id = ?";
-$stmt = $conn->prepare($check_sql);
+$stmt = $mysqli->prepare($check_sql);
 $stmt->bind_param("i", $task_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -35,11 +35,11 @@ if (!$task || $task['assigned_to'] !== $employee_id) {
 
 // อัพเดทสถานะ
 $update_sql = "UPDATE tasks SET status = ? WHERE task_id = ? AND assigned_to = ?";
-$stmt = $conn->prepare($update_sql);
+$stmt = $mysqli->prepare($update_sql);
 $stmt->bind_param("sii", $status, $task_id, $employee_id);
 
 if ($stmt->execute()) {
     echo json_encode(['success' => true]);
 } else {
-    echo json_encode(['success' => false, 'message' => $conn->error]);
+    echo json_encode(['success' => false, 'message' => $mysqli->error]);
 } 

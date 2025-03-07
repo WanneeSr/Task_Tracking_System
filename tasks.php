@@ -33,12 +33,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
 
         $sql = "INSERT INTO tasks (title, description, priority, due_date, assigned_to, created_by, status) 
                 VALUES (?, ?, ?, ?, ?, ?, ?)";
-        $stmt = $conn->prepare($sql);
+        $stmt = $mysqli->prepare($sql);
         $stmt->bind_param("ssssiss", $title, $description, $priority, $due_date, $assigned_to, $created_by, $status);
 
         if ($stmt->execute()) {
             // ดึงข้อมูลงานที่เพิ่งเพิ่มเข้าไป
-            $new_task_id = $conn->insert_id;
+            $new_task_id = $mysqli->insert_id;
             $fetch_sql = "SELECT t.*, 
                          u.username as assigned_username,
                          DATE_FORMAT(t.created_at, '%d/%m/%Y %H:%i') as created_at_formatted
@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                          LEFT JOIN users u ON t.assigned_to = u.user_id 
                          WHERE t.task_id = ?";
             
-            $fetch_stmt = $conn->prepare($fetch_sql);
+            $fetch_stmt = $mysqli->prepare($fetch_sql);
             $fetch_stmt->bind_param("i", $new_task_id);
             $fetch_stmt->execute();
             $new_task = $fetch_stmt->get_result()->fetch_assoc();
@@ -97,7 +97,7 @@ $tasks_sql = match($role) {
 };
 
 if ($tasks_sql) {
-    $stmt = $conn->prepare($tasks_sql);
+    $stmt = $mysqli->prepare($tasks_sql);
     if ($role !== 'admin') {
         $stmt->bind_param("i", $user_id);
     }
@@ -165,7 +165,7 @@ include 'header.php';
                         <select id="filterAssignee" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             <option value="">ทั้งหมด</option>
                             <?php
-                            $users = $conn->query("SELECT user_id, username FROM users");
+                            $users = $mysqli->query("SELECT user_id, username FROM users");
                             while ($user = $users->fetch_assoc()) {
                                 echo "<option value='{$user['user_id']}'>{$user['username']}</option>";
                             }

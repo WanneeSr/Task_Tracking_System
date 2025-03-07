@@ -7,10 +7,10 @@ checkManager();
 // ดึงข้อมูลสถิติของทีม
 $manager_id = $_SESSION['user_id'];
 $stats = [
-    'total_tasks' => $conn->query("SELECT COUNT(*) as count FROM tasks WHERE created_by = $manager_id")->fetch_assoc()['count'],
-    'pending_tasks' => $conn->query("SELECT COUNT(*) as count FROM tasks WHERE created_by = $manager_id AND status = 'pending'")->fetch_assoc()['count'],
-    'in_progress' => $conn->query("SELECT COUNT(*) as count FROM tasks WHERE created_by = $manager_id AND status = 'in_progress'")->fetch_assoc()['count'],
-    'completed_tasks' => $conn->query("SELECT COUNT(*) as count FROM tasks WHERE created_by = $manager_id AND status = 'completed'")->fetch_assoc()['count']
+    'total_tasks' => $mysqli->query("SELECT COUNT(*) as count FROM tasks WHERE created_by = $manager_id")->fetch_assoc()['count'],
+    'pending_tasks' => $mysqli->query("SELECT COUNT(*) as count FROM tasks WHERE created_by = $manager_id AND status = 'pending'")->fetch_assoc()['count'],
+    'in_progress' => $mysqli->query("SELECT COUNT(*) as count FROM tasks WHERE created_by = $manager_id AND status = 'in_progress'")->fetch_assoc()['count'],
+    'completed_tasks' => $mysqli->query("SELECT COUNT(*) as count FROM tasks WHERE created_by = $manager_id AND status = 'completed'")->fetch_assoc()['count']
 ];
 
 // ดึงงานที่ใกล้ถึงกำหนด
@@ -24,7 +24,7 @@ $upcoming_tasks_sql = "
     ORDER BY t.due_date ASC
     LIMIT 5";
 
-$stmt = $conn->prepare($upcoming_tasks_sql);
+$stmt = $mysqli->prepare($upcoming_tasks_sql);
 $stmt->bind_param("i", $manager_id);
 $stmt->execute();
 $upcoming_tasks = $stmt->get_result();
@@ -40,7 +40,7 @@ $team_performance_sql = "
     GROUP BY u.user_id
     ORDER BY completed_tasks DESC";
 
-$stmt = $conn->prepare($team_performance_sql);
+$stmt = $mysqli->prepare($team_performance_sql);
 $stmt->bind_param("i", $manager_id);
 $stmt->execute();
 $team_performance = $stmt->get_result();

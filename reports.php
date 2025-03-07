@@ -16,7 +16,7 @@ $sql = "SELECT
             SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled_tasks
         FROM tasks 
         WHERE assigned_to = ?";
-$stmt = $conn->prepare($sql);
+$stmt = $mysqli->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $stats = $stmt->get_result()->fetch_assoc();
@@ -29,7 +29,7 @@ $sql = "SELECT t.*, p.project_name, u.username as assigned_by_name
         WHERE t.assigned_to = ? 
         ORDER BY t.updated_at DESC 
         LIMIT 5";
-$stmt = $conn->prepare($sql);
+$stmt = $mysqli->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $recent_updates = $stmt->get_result();
@@ -39,7 +39,7 @@ $sql = "SELECT priority, COUNT(*) as count
         FROM tasks 
         WHERE assigned_to = ? 
         GROUP BY priority";
-$stmt = $conn->prepare($sql);
+$stmt = $mysqli->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $priority_stats = $stmt->get_result();

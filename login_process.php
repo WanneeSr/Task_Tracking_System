@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     $sql = "SELECT * FROM users WHERE username = ? AND password = ?";
-    $stmt = $conn->prepare($sql);
+    $stmt = $mysqli->prepare($sql);
     $stmt->bind_param("ss", $username, $password);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -47,5 +47,5 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     ]);
 }
 
-$conn->close();
+$mysqli->close();
 ?> 

@@ -42,7 +42,7 @@ if (isset($_GET['date_to']) && !empty($_GET['date_to'])) {
 
 // ดึงจำนวนรายการทั้งหมด
 $total_sql = "SELECT COUNT(*) as total FROM activity_logs l WHERE $where";
-$total_stmt = $conn->prepare($total_sql);
+$total_stmt = $mysqli->prepare($total_sql);
 if (!empty($params)) {
     array_pop($params); // ลบ limit ออก
     array_pop($params);
@@ -61,7 +61,7 @@ $logs_sql = "
     ORDER BY l.created_at DESC
     LIMIT ? OFFSET ?";
 
-$stmt = $conn->prepare($logs_sql);
+$stmt = $mysqli->prepare($logs_sql);
 if (!empty($params)) {
     $params[] = $per_page;
     $params[] = $offset;
@@ -91,7 +91,7 @@ $logs = $stmt->get_result();
                     <select name="user_id" id="user_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                         <option value="">ทั้งหมด</option>
                         <?php
-                        $users = $conn->query("SELECT user_id, username FROM users ORDER BY username");
+                        $users = $mysqli->query("SELECT user_id, username FROM users ORDER BY username");
                         while ($user = $users->fetch_assoc()) {
                             $selected = isset($_GET['user_id']) && $_GET['user_id'] == $user['user_id'] ? 'selected' : '';
                             echo "<option value='{$user['user_id']}' {$selected}>{$user['username']}</option>";

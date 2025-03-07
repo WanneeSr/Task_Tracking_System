@@ -18,7 +18,7 @@ require_once '../auth.php';
 checkAdmin();
 
 // ตรวจสอบการเชื่อมต่อฐานข้อมูล
-if (!isset($conn)) {
+if (!isset($mysqli)) {
     echo json_encode(['error' => 'Database connection failed']);
     exit;
 }
@@ -39,10 +39,10 @@ try {
 
     // เตรียม SQL query
     $sql = "DELETE FROM tasks WHERE task_id = ?";
-    $stmt = $conn->prepare($sql);
+    $stmt = $mysqli->prepare($sql);
     
     if (!$stmt) {
-        throw new Exception($conn->error);
+        throw new Exception($mysqli->error);
     }
 
     // Bind parameter
@@ -73,7 +73,7 @@ try {
         'error' => $e->getMessage()
     ]);
 } finally {
-    if (isset($conn)) {
-        $conn->close();
+    if (isset($mysqli)) {
+        $mysqli->close();
     }
 } 

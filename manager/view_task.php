@@ -20,7 +20,7 @@ $sql = "SELECT t.*,
         LEFT JOIN users u1 ON t.assigned_to = u1.user_id
         LEFT JOIN users u2 ON t.created_by = u2.user_id
         WHERE t.task_id = ?";
-$stmt = $conn->prepare($sql);
+$stmt = $mysqli->prepare($sql);
 $stmt->bind_param("i", $task_id);
 $stmt->execute();
 $task = $stmt->get_result()->fetch_assoc();

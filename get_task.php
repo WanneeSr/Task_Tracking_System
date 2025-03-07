@@ -26,7 +26,7 @@ try {
             LEFT JOIN users c ON t.created_by = c.user_id
             WHERE t.task_id = ?";
             
-    $stmt = $conn->prepare($sql);
+    $stmt = $mysqli->prepare($sql);
     $stmt->bind_param("i", $task_id);
     $stmt->execute();
     $result = $stmt->get_result();

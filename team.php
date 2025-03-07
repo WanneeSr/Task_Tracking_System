@@ -14,7 +14,7 @@ $sql = "SELECT u.*, d.name as department_name
         WHERE u.department_id = (SELECT department_id FROM users WHERE user_id = ?)
         AND u.user_id != ?
         ORDER BY u.username";
-$stmt = $conn->prepare($sql);
+$stmt = $mysqli->prepare($sql);
 $stmt->bind_param("ii", $user_id, $user_id);
 $stmt->execute();
 $team_members = $stmt->get_result();
@@ -32,7 +32,7 @@ $sql = "SELECT t.*, p.project_name, u.username as assigned_by_name
         AND t.assigned_to != ?
         ORDER BY t.due_date DESC 
         LIMIT 5";
-$stmt = $conn->prepare($sql);
+$stmt = $mysqli->prepare($sql);
 $stmt->bind_param("ii", $user_id, $user_id);
 $stmt->execute();
 $shared_tasks = $stmt->get_result();

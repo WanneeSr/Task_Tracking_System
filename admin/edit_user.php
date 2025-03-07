@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 role = ?,
                 is_active = ?
                 WHERE user_id = ?";
-        $stmt = $conn->prepare($sql);
+        $stmt = $mysqli->prepare($sql);
         $stmt->bind_param("ssssii", $username, $email, $password, $role, $is_active, $user_id);
     } else {
         // ถ้าไม่ได้เปลี่ยนรหัสผ่าน
@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 role = ?,
                 is_active = ?
                 WHERE user_id = ?";
-        $stmt = $conn->prepare($sql);
+        $stmt = $mysqli->prepare($sql);
         $stmt->bind_param("sssii", $username, $email, $role, $is_active, $user_id);
     }
 
@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 // ดึงข้อมูลผู้ใช้
 $sql = "SELECT * FROM users WHERE user_id = ?";
-$stmt = $conn->prepare($sql);
+$stmt = $mysqli->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();

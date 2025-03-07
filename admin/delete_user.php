@@ -18,7 +18,7 @@ if ($user_id == $_SESSION['user_id']) {
 
 // ลบผู้ใช้
 $sql = "DELETE FROM users WHERE user_id = ?";
-$stmt = $conn->prepare($sql);
+$stmt = $mysqli->prepare($sql);
 $stmt->bind_param("i", $user_id);
 
 if ($stmt->execute()) {

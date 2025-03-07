@@ -17,9 +17,9 @@ $monthly_stats_sql = "
     GROUP BY DATE_FORMAT(created_at, '%Y-%m')
     ORDER BY month DESC";
 
-$monthly_stats = $conn->query($monthly_stats_sql);
+$monthly_stats = $mysqli->query($monthly_stats_sql);
 if (!$monthly_stats) {
-    die("Error: " . $conn->error);
+    die("Error: " . $mysqli->error);
 }
 
 // ดึงข้อมูลประสิทธิภาพของผู้ใช้
@@ -36,9 +36,9 @@ $user_performance_sql = "
     GROUP BY u.user_id
     ORDER BY completed_tasks DESC";
 
-$user_performance = $conn->query($user_performance_sql);
+$user_performance = $mysqli->query($user_performance_sql);
 if (!$user_performance) {
-    die("Error: " . $conn->error);
+    die("Error: " . $mysqli->error);
 }
 
 // ดึงข้อมูลงานที่เลยกำหนด
@@ -50,9 +50,9 @@ $overdue_tasks_sql = "
     AND t.due_date < CURRENT_DATE
     ORDER BY t.due_date ASC";
 
-$overdue_tasks = $conn->query($overdue_tasks_sql);
+$overdue_tasks = $mysqli->query($overdue_tasks_sql);
 if (!$overdue_tasks) {
-    die("Error: " . $conn->error);
+    die("Error: " . $mysqli->error);
 }
 ?>
 

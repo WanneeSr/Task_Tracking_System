@@ -15,24 +15,24 @@ if (isset($_POST['delete_user'])) {
     }
     
     // เริ่ม transaction
-    $conn->begin_transaction();
+    $mysqli->begin_transaction();
     
     try {
         // 1. ลบข้อมูลจาก activity_logs
-        $conn->query("DELETE FROM activity_logs WHERE user_id = $user_id");
+        $mysqli->query("DELETE FROM activity_logs WHERE user_id = $user_id");
         
         // 2. ลบข้อมูลจาก tasks
-        $conn->query("DELETE FROM tasks WHERE created_by = $user_id");
+        $mysqli->query("DELETE FROM tasks WHERE created_by = $user_id");
         
         // 3. สุดท้ายค่อยลบข้อมูลจากตาราง users
-        $result = $conn->query("DELETE FROM users WHERE user_id = $user_id");
+        $result = $mysqli->query("DELETE FROM users WHERE user_id = $user_id");
         
         if ($result) {
-            $conn->commit();
+            $mysqli->commit();
             // บันทึก activity log สำหรับการลบผู้ใช้
             $admin_id = $_SESSION['user_id'];
             $log_description = "ลบผู้ใช้ ID: $user_id ออกจากระบบ";
-            $conn->query("INSERT INTO activity_logs (user_id, action, description) VALUES ($admin_id, 'delete_user', '$log_description')");
+            $mysqli->query("INSERT INTO activity_logs (user_id, action, description) VALUES ($admin_id, 'delete_user', '$log_description')");
             
             header("Location: users.php?success=user_deleted");
             exit();
@@ -41,7 +41,7 @@ if (isset($_POST['delete_user'])) {
         }
         
     } catch (Exception $e) {
-        $conn->rollback();
+        $mysqli->rollback();
         error_log("Error deleting user: " . $e->getMessage());
         header("Location: users.php?error=delete_failed&message=" . urlencode($e->getMessage()));
         exit();
@@ -49,7 +49,7 @@ if (isset($_POST['delete_user'])) {
 }
 
 // ดึงข้อมูลผู้ใช้ทั้งหมด
-$result = $conn->query("SELECT * FROM users ORDER BY created_at DESC");
+$result = $mysqli->query("SELECT * FROM users ORDER BY created_at DESC");
 
 // จัดการข้อความแจ้งเตือน
 $message = '';
@@ -439,7 +439,7 @@ function addUser() {
     submitBtn.disabled = true;
     submitBtn.innerHTML = 'กำลังเพิ่มผู้ใช้...';
 
-    fetch('add_user.php', {
+    fetch('./add_user.php', {
         method: 'POST',
         body: formData
     })

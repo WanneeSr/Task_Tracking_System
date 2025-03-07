@@ -14,7 +14,7 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once '../db.php';
 
 // ตรวจสอบการเชื่อมต่อฐานข้อมูล
-if (!isset($conn)) {
+if (!isset($mysqli)) {
     echo json_encode(['error' => 'Database connection failed']);
     exit;
 }
@@ -51,10 +51,10 @@ try {
             updated_at = CURRENT_TIMESTAMP
             WHERE task_id = ?";
 
-    $stmt = $conn->prepare($sql);
+    $stmt = $mysqli->prepare($sql);
     
     if (!$stmt) {
-        throw new Exception($conn->error);
+        throw new Exception($mysqli->error);
     }
 
     // Bind parameters
@@ -93,8 +93,8 @@ try {
         'error' => $e->getMessage()
     ]);
 } finally {
-    if (isset($conn)) {
-        $conn->close();
+    if (isset($mysqli)) {
+        $mysqli->close();
     }
 }
 ?> 

@@ -20,7 +20,7 @@ try {
     }
 
     // ใช้ Prepared Statement เพื่อป้องกัน SQL Injection
-    $stmt = $conn->prepare("
+    $stmt = $mysqli->prepare("
         SELECT user_id, username, email, role 
         FROM users 
         WHERE user_id = ?
@@ -64,4 +64,4 @@ try {
 
 // ปิดการเชื่อมต่อ
 $stmt->close();
-$conn->close(); 
+$mysqli->close(); 

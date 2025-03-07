@@ -43,10 +43,10 @@ function checkManager() {
 
 // ตรวจสอบเจ้าของงานหรือผู้ที่ได้รับมอบหมาย
 function checkTaskPermission($taskId) {
-    global $conn;
+    global $mysqli;
     
     $sql = "SELECT created_by, assigned_to FROM tasks WHERE task_id = ?";
-    $stmt = $conn->prepare($sql);
+    $stmt = $mysqli->prepare($sql);
     $stmt->bind_param("i", $taskId);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -68,11 +68,11 @@ function checkTaskPermission($taskId) {
 
 // ตรวจสอบสิทธิ์ในการแก้ไขงาน
 function canEditTask($task_id) {
-    global $conn;
+    global $mysqli;
     $user_id = $_SESSION['user_id'] ?? 0;
     
     // ตรวจสอบว่าเป็นงานที่ได้รับมอบหมายหรือไม่
-    $stmt = $conn->prepare("SELECT * FROM tasks WHERE task_id = ? AND assigned_to = ?");
+    $stmt = $mysqli->prepare("SELECT * FROM tasks WHERE task_id = ? AND assigned_to = ?");
     $stmt->bind_param("ii", $task_id, $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -82,7 +82,7 @@ function canEditTask($task_id) {
 
 // ตรวจสอบสิทธิ์ในการลบงาน
 function canDeleteTask($task_id) {
-    global $conn;
+    global $mysqli;
     $user_id = $_SESSION['user_id'] ?? 0;
     $role = $_SESSION['role'] ?? '';
     
@@ -92,7 +92,7 @@ function canDeleteTask($task_id) {
     }
     
     // ผู้ใช้ทั่วไปสามารถลบงานที่ตัวเองสร้างเท่านั้น
-    $stmt = $conn->prepare("SELECT * FROM tasks WHERE task_id = ? AND created_by = ?");
+    $stmt = $mysqli->prepare("SELECT * FROM tasks WHERE task_id = ? AND created_by = ?");
     $stmt->bind_param("ii", $task_id, $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -102,9 +102,9 @@ function canDeleteTask($task_id) {
 
 // ตรวจสอบว่าเป็นเจ้าของงานหรือไม่
 function isTaskCreator($taskId) {
-    global $conn;
+    global $mysqli;
     $sql = "SELECT created_by FROM tasks WHERE task_id = ?";
-    $stmt = $conn->prepare($sql);
+    $stmt = $mysqli->prepare($sql);
     $stmt->bind_param("i", $taskId);
     $stmt->execute();
     $result = $stmt->get_result();

@@ -18,7 +18,7 @@ $sql = "SELECT t.*, u.username as assigned_username
         FROM tasks t 
         LEFT JOIN users u ON t.assigned_to = u.user_id 
         WHERE t.task_id = ? AND t.created_by = ?";
-$stmt = $conn->prepare($sql);
+$stmt = $mysqli->prepare($sql);
 $stmt->bind_param("ii", $task_id, $manager_id);
 $stmt->execute();
 $task = $stmt->get_result()->fetch_assoc();
@@ -31,7 +31,7 @@ if (!$task) {
 
 // ดึงรายชื่อพนักงาน
 $employees_sql = "SELECT user_id, username, email FROM users WHERE role = 'employee'";
-$employees = $conn->query($employees_sql);
+$employees = $mysqli->query($employees_sql);
 
 // จัดการการอัพเดทข้อมูล
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                       SET title = ?, description = ?, assigned_to = ?, 
                           priority = ?, due_date = ?, status = ? 
                       WHERE task_id = ? AND created_by = ?";
-        $stmt = $conn->prepare($update_sql);
+        $stmt = $mysqli->prepare($update_sql);
         $stmt->bind_param("ssisssii", $title, $description, $assigned_to, 
                          $priority, $due_date, $status, $task_id, $manager_id);
 
@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: tasks.php');
             exit();
         } else {
-            $_SESSION['error'] = "เกิดข้อผิดพลาด: " . $conn->error;
+            $_SESSION['error'] = "เกิดข้อผิดพลาด: " . $mysqli->error;
         }
     }
 }

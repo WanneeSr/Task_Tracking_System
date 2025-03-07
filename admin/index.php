@@ -6,14 +6,14 @@ checkAdmin();
 
 // ดึงข้อมูลสถิติ
 $stats = [
-    'total_users' => $conn->query("SELECT COUNT(*) as count FROM users")->fetch_assoc()['count'],
-    'total_tasks' => $conn->query("SELECT COUNT(*) as count FROM tasks")->fetch_assoc()['count'],
-    'pending_tasks' => $conn->query("SELECT COUNT(*) as count FROM tasks WHERE status = 'pending'")->fetch_assoc()['count'],
-    'completed_tasks' => $conn->query("SELECT COUNT(*) as count FROM tasks WHERE status = 'completed'")->fetch_assoc()['count']
+    'total_users' => $mysqli->query("SELECT COUNT(*) as count FROM users")->fetch_assoc()['count'],
+    'total_tasks' => $mysqli->query("SELECT COUNT(*) as count FROM tasks")->fetch_assoc()['count'],
+    'pending_tasks' => $mysqli->query("SELECT COUNT(*) as count FROM tasks WHERE status = 'pending'")->fetch_assoc()['count'],
+    'completed_tasks' => $mysqli->query("SELECT COUNT(*) as count FROM tasks WHERE status = 'completed'")->fetch_assoc()['count']
 ];
 
 // ดึงกิจกรรมล่าสุด
-$recent_activities = $conn->query("
+$recent_activities = $mysqli->query("
     SELECT l.*, u.username 
     FROM activity_logs l
     LEFT JOIN users u ON l.user_id = u.user_id
@@ -22,7 +22,7 @@ $recent_activities = $conn->query("
 ");
 
 // ดึงผู้ใช้ที่เพิ่มล่าสุด
-$recent_users = $conn->query("
+$recent_users = $mysqli->query("
     SELECT * FROM users 
     ORDER BY created_at DESC 
     LIMIT 5

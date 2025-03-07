@@ -10,13 +10,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $name = trim($_POST['name']);
         $description = trim($_POST['description']);
         
-        $stmt = $conn->prepare("INSERT INTO departments (name, description) VALUES (?, ?)");
+        $stmt = $mysqli->prepare("INSERT INTO departments (name, description) VALUES (?, ?)");
         $stmt->bind_param("ss", $name, $description);
         $stmt->execute();
     }
     // จัดการการลบแผนก
     elseif ($_POST['action'] === 'delete' && isset($_POST['department_id'])) {
-        $stmt = $conn->prepare("DELETE FROM departments WHERE department_id = ?");
+        $stmt = $mysqli->prepare("DELETE FROM departments WHERE department_id = ?");
         $stmt->bind_param("i", $_POST['department_id']);
         $stmt->execute();
     }
@@ -26,14 +26,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $name = trim($_POST['name']);
         $description = trim($_POST['description']);
         
-        $stmt = $conn->prepare("UPDATE departments SET name = ?, description = ? WHERE department_id = ?");
+        $stmt = $mysqli->prepare("UPDATE departments SET name = ?, description = ? WHERE department_id = ?");
         $stmt->bind_param("ssi", $name, $description, $id);
         $stmt->execute();
     }
 }
 
 // ดึงข้อมูลแผนกทั้งหมด
-$departments = $conn->query("SELECT * FROM departments ORDER BY name");
+$departments = $mysqli->query("SELECT * FROM departments ORDER BY name");
 ?>
 
 <div class="min-h-screen bg-gray-50 py-6">

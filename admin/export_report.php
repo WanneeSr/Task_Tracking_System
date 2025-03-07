@@ -63,7 +63,7 @@ switch ($type) {
             GROUP BY DATE_FORMAT(created_at, '%Y-%m')
             ORDER BY month DESC";
         
-        $result = $conn->query($sql);
+        $result = $mysqli->query($sql);
         $data = [];
         $headers = ['เดือน', 'งานทั้งหมด', 'เสร็จสิ้น', 'กำลังดำเนินการ', 'รอดำเนินการ', 'อัตราความสำเร็จ'];
         
@@ -99,7 +99,7 @@ switch ($type) {
             GROUP BY u.user_id
             ORDER BY completed_tasks DESC";
         
-        $result = $conn->query($sql);
+        $result = $mysqli->query($sql);
         $data = [];
         $headers = ['ผู้ใช้', 'งานทั้งหมด', 'เสร็จสิ้น', 'กำลังดำเนินการ', 'รอดำเนินการ', 'อัตราความสำเร็จ'];
         
@@ -130,7 +130,7 @@ switch ($type) {
             AND t.due_date < CURRENT_DATE
             ORDER BY t.due_date ASC";
         
-        $result = $conn->query($sql);
+        $result = $mysqli->query($sql);
         $data = [];
         $headers = ['งาน', 'ผู้รับผิดชอบ', 'กำหนดส่ง', 'เลยกำหนด (วัน)', 'สถานะ'];
         

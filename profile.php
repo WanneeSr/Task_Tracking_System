@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profile_image'])) {
         // อัปโหลดไฟล์
         if (move_uploaded_file($file['tmp_name'], $upload_dir . $new_filename)) {
             // อัปเดตฐานข้อมูล
-            $stmt = $conn->prepare("UPDATE users SET profile_image = ? WHERE user_id = ?");
+            $stmt = $mysqli->prepare("UPDATE users SET profile_image = ? WHERE user_id = ?");
             $stmt->bind_param("si", $new_filename, $user_id);
             
             if ($stmt->execute()) {
@@ -54,13 +54,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profile_image'])) {
 
 // ดึงข้อมูลผู้ใช้
 $user_id = $_SESSION['user_id'];
-$stmt = $conn->prepare("SELECT * FROM users WHERE user_id = ?");
+$stmt = $mysqli->prepare("SELECT * FROM users WHERE user_id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 
 // ดึงสถิติงานของผู้ใช้
-$tasks_stmt = $conn->prepare("
+$tasks_stmt = $mysqli->prepare("
     SELECT 
         COUNT(*) as total_tasks,
         SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_tasks,

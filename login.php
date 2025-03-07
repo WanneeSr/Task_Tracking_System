@@ -18,10 +18,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         try {
             // เตรียมคำสั่ง SQL ด้วย prepared statement
             $sql = "SELECT user_id, username, password, role FROM users WHERE username = ?";
-            $stmt = $conn->prepare($sql);
+            $stmt = $mysqli->prepare($sql);
             
             if (!$stmt) {
-                throw new Exception("Database error: " . $conn->error);
+                throw new Exception("Database error: " . $mysqli->error);
             }
 
             $stmt->bind_param("s", $username);
@@ -44,10 +44,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             header('Location: /task_tracking_system/admin/index.php');
                             break;
                         case 'manager':
-                            header('Location: /task_tracking_system/manager/index.php');
+                            header('Location: /task_tracking_system/index.php');
                             break;
                         case 'employee':
-                            header('Location: /task_tracking_system/employee/index.php');
+                            header('Location: /task_tracking_system/index.php');
                             break;
                         default:
                             $error = "ไม่พบสิทธิ์การเข้าใช้งานที่เหมาะสม";

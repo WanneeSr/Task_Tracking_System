@@ -6,7 +6,7 @@ checkAdmin();
 
 // ดึงรายการพนักงานทั้งหมด
 $employees_sql = "SELECT user_id, username, email FROM users WHERE role = 'employee'";
-$employees = $conn->query($employees_sql);
+$employees = $mysqli->query($employees_sql);
 
 // ดึงรายการงานทั้งหมด
 $tasks_sql = "
@@ -14,7 +14,7 @@ $tasks_sql = "
     FROM tasks t
     LEFT JOIN users u ON t.assigned_to = u.user_id
     ORDER BY t.created_at DESC";
-$tasks = $conn->query($tasks_sql);
+$tasks = $mysqli->query($tasks_sql);
 ?>
 
 <div class="min-h-screen bg-gray-50 py-8">
@@ -344,7 +344,7 @@ $tasks = $conn->query($tasks_sql);
                                         class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500">
                                     <option value="">เลือกผู้รับผิดชอบ</option>
                                     <?php 
-                                    $employees = $conn->query("SELECT user_id, username FROM users WHERE role = 'employee'");
+                                    $employees = $mysqli->query("SELECT user_id, username FROM users WHERE role = 'employee'");
                                     while ($employee = $employees->fetch_assoc()): 
                                     ?>
                                         <option value="<?php echo $employee['user_id']; ?>">

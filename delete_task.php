@@ -22,7 +22,7 @@ $user_id = $_SESSION['user_id'];
 
 // ตรวจสอบสิทธิ์ในการลบงาน
 $check_permission = "SELECT * FROM tasks WHERE task_id = ? AND (created_by = ? OR ? IN (SELECT user_id FROM users WHERE role = 'admin'))";
-$stmt = $conn->prepare($check_permission);
+$stmt = $mysqli->prepare($check_permission);
 $stmt->bind_param("iii", $task_id, $user_id, $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -34,7 +34,7 @@ if ($result->num_rows === 0) {
 
 // ดำเนินการลบงาน
 $delete_sql = "DELETE FROM tasks WHERE task_id = ?";
-$delete_stmt = $conn->prepare($delete_sql);
+$delete_stmt = $mysqli->prepare($delete_sql);
 $delete_stmt->bind_param("i", $task_id);
 
 if ($delete_stmt->execute()) {
@@ -45,5 +45,5 @@ if ($delete_stmt->execute()) {
 
 $stmt->close();
 $delete_stmt->close();
-$conn->close();
+$mysqli->close();
 ?>

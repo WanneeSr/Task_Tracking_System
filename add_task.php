@@ -30,11 +30,11 @@ try {
 
     $sql = "INSERT INTO tasks (title, description, priority, due_date, assigned_to, created_by, status) 
             VALUES (?, ?, ?, ?, ?, ?, ?)";
-    $stmt = $conn->prepare($sql);
+    $stmt = $mysqli->prepare($sql);
     $stmt->bind_param("ssssiss", $title, $description, $priority, $due_date, $assigned_to, $created_by, $status);
 
     if ($stmt->execute()) {
-        $new_task_id = $conn->insert_id;
+        $new_task_id = $mysqli->insert_id;
         
         // ดึงข้อมูลงานที่เพิ่งเพิ่ม
         $task_sql = "SELECT t.*, 
@@ -47,7 +47,7 @@ try {
                     LEFT JOIN users c ON t.created_by = c.user_id
                     WHERE t.task_id = ?";
         
-        $task_stmt = $conn->prepare($task_sql);
+        $task_stmt = $mysqli->prepare($task_sql);
         $task_stmt->bind_param("i", $new_task_id);
         $task_stmt->execute();
         $task_result = $task_stmt->get_result();
@@ -85,4 +85,4 @@ try {
 }
 
 $stmt->close();
-$conn->close();
+$mysqli->close();

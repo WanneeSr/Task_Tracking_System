@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql = "INSERT INTO tasks (title, description, assigned_to, priority, due_date, created_by, status) 
                 VALUES (?, ?, ?, ?, ?, ?, 'pending')";
         
-        $stmt = $conn->prepare($sql);
+        $stmt = $mysqli->prepare($sql);
         if ($stmt) {
             $stmt->bind_param("ssissi", $title, $description, $assigned_to, $priority, $due_date, $created_by);
             
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $errors[] = "เกิดข้อผิดพลาดในการบันทึกข้อมูล: " . $stmt->error;
             }
         } else {
-            $errors[] = "เกิดข้อผิดพลาดในการเตรียมคำสั่ง SQL: " . $conn->error;
+            $errors[] = "เกิดข้อผิดพลาดในการเตรียมคำสั่ง SQL: " . $mysqli->error;
         }
     }
 

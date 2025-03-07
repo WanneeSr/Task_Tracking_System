@@ -35,7 +35,7 @@ $stats_sql = match($role) {
 
 $stats = [];
 if ($stats_sql) {
-    $stmt = $conn->prepare($stats_sql);
+    $stmt = $mysqli->prepare($stats_sql);
     if ($role !== 'admin') {
         $stmt->bind_param("ii", $user_id, $user_id);
     }
@@ -53,7 +53,7 @@ if ($stats_sql) {
 $priority_sql = str_replace('status', 'priority', $stats_sql);
 $priority_stats = [];
 if ($priority_sql) {
-    $stmt = $conn->prepare($priority_sql);
+    $stmt = $mysqli->prepare($priority_sql);
     if ($role !== 'admin') {
         $stmt->bind_param("ii", $user_id, $user_id);
     }

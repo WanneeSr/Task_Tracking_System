@@ -25,13 +25,13 @@ if (empty($title) || empty($due_date)) {
 
 $sql = "INSERT INTO tasks (title, description, assigned_to, priority, due_date, created_by, status) 
         VALUES (?, ?, ?, ?, ?, ?, ?)";
-$stmt = $conn->prepare($sql);
+$stmt = $mysqli->prepare($sql);
 $stmt->bind_param("ssissis", $title, $description, $assigned_to, $priority, $due_date, $created_by, $status);
 
 if ($stmt->execute()) {
     $_SESSION['success'] = "เพิ่มงานเรียบร้อยแล้ว";
 } else {
-    $_SESSION['error'] = "เกิดข้อผิดพลาด: " . $conn->error;
+    $_SESSION['error'] = "เกิดข้อผิดพลาด: " . $mysqli->error;
 }
 
 header('Location: tasks.php'); 

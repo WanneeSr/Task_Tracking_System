@@ -6,10 +6,10 @@ checkAdmin();
 
 // ดึงข้อมูลสถิติ
 $stats = [
-    'total_users' => $conn->query("SELECT COUNT(*) as count FROM users")->fetch_assoc()['count'],
-    'total_tasks' => $conn->query("SELECT COUNT(*) as count FROM tasks")->fetch_assoc()['count'],
-    'pending_tasks' => $conn->query("SELECT COUNT(*) as count FROM tasks WHERE status = 'pending'")->fetch_assoc()['count'],
-    'completed_tasks' => $conn->query("SELECT COUNT(*) as count FROM tasks WHERE status = 'completed'")->fetch_assoc()['count']
+    'total_users' => $mysqli->query("SELECT COUNT(*) as count FROM users")->fetch_assoc()['count'],
+    'total_tasks' => $mysqli->query("SELECT COUNT(*) as count FROM tasks")->fetch_assoc()['count'],
+    'pending_tasks' => $mysqli->query("SELECT COUNT(*) as count FROM tasks WHERE status = 'pending'")->fetch_assoc()['count'],
+    'completed_tasks' => $mysqli->query("SELECT COUNT(*) as count FROM tasks WHERE status = 'completed'")->fetch_assoc()['count']
 ];
 
 // ดึงงานล่าสุด
@@ -18,18 +18,18 @@ $recent_tasks_sql = "SELECT t.*, u.username as assigned_username
                     LEFT JOIN users u ON t.assigned_to = u.user_id
                     ORDER BY t.created_at DESC 
                     LIMIT 5";
-$recent_tasks = $conn->query($recent_tasks_sql);
+$recent_tasks = $mysqli->query($recent_tasks_sql);
 
 // ดึงผู้ใช้ล่าสุด
 $recent_users_sql = "SELECT user_id, username, email, role, created_at 
                      FROM users 
                      ORDER BY created_at DESC 
                      LIMIT 5";
-$recent_users = $conn->query($recent_users_sql);
+$recent_users = $mysqli->query($recent_users_sql);
 
 // ตรวจสอบการ query
 if (!$recent_tasks || !$recent_users) {
-    die("Error: " . $conn->error);
+    die("Error: " . $mysqli->error);
 }
 ?>
 

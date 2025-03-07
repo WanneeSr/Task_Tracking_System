@@ -13,7 +13,7 @@ if (isset($_GET['token'])) {
             FROM email_verifications ev 
             JOIN users u ON ev.user_id = u.user_id 
             WHERE ev.token = ? AND ev.expires_at > NOW()";
-    $stmt = $conn->prepare($sql);
+    $stmt = $mysqli->prepare($sql);
     $stmt->bind_param("s", $token);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -27,13 +27,13 @@ if (isset($_GET['token'])) {
         
         // บันทึก token รีเซ็ทรหัสผ่าน
         $sql = "INSERT INTO password_resets (user_id, token, expires_at) VALUES (?, ?, ?)";
-        $stmt = $conn->prepare($sql);
+        $stmt = $mysqli->prepare($sql);
         $stmt->bind_param("iss", $verification['user_id'], $reset_token, $reset_expires);
         
         if ($stmt->execute()) {
             // ลบ token ยืนยันอีเมล
             $sql = "DELETE FROM email_verifications WHERE id = ?";
-            $stmt = $conn->prepare($sql);
+            $stmt = $mysqli->prepare($sql);
             $stmt->bind_param("i", $verification['id']);
             $stmt->execute();
             

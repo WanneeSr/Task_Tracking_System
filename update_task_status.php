@@ -28,7 +28,7 @@ $check_permission = "SELECT * FROM tasks
                     AND (created_by = ? OR assigned_to = ? OR ? IN (
                         SELECT user_id FROM users WHERE role = 'admin' OR role = 'manager'
                     ))";
-$stmt = $conn->prepare($check_permission);
+$stmt = $mysqli->prepare($check_permission);
 $stmt->bind_param("iiii", $task_id, $user_id, $user_id, $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -40,7 +40,7 @@ if ($result->num_rows === 0) {
 
 // อัพเดทสถานะงาน
 $update_sql = "UPDATE tasks SET status = ?, updated_at = NOW() WHERE task_id = ?";
-$update_stmt = $conn->prepare($update_sql);
+$update_stmt = $mysqli->prepare($update_sql);
 $update_stmt->bind_param("si", $status, $task_id);
 
 if ($update_stmt->execute()) {
@@ -55,7 +55,7 @@ if ($update_stmt->execute()) {
                   LEFT JOIN users u2 ON t.created_by = u2.user_id
                   WHERE t.task_id = ?";
     
-    $fetch_stmt = $conn->prepare($fetch_sql);
+    $fetch_stmt = $mysqli->prepare($fetch_sql);
     $fetch_stmt->bind_param("i", $task_id);
     $fetch_stmt->execute();
     $updated_task = $fetch_stmt->get_result()->fetch_assoc();
@@ -74,5 +74,5 @@ if ($update_stmt->execute()) {
 
 $stmt->close();
 $update_stmt->close();
-$conn->close();
+$mysqli->close();
 ?> 

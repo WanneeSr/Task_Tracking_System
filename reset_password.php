@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($errors)) {
         // ตรวจสอบว่ามีอีเมลนี้ในระบบหรือไม่
         $sql = "SELECT user_id FROM users WHERE email = ?";
-        $stmt = $conn->prepare($sql);
+        $stmt = $mysqli->prepare($sql);
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // อัปเดตรหัสผ่าน
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             $sql = "UPDATE users SET password = ? WHERE user_id = ?";
-            $stmt = $conn->prepare($sql);
+            $stmt = $mysqli->prepare($sql);
             $stmt->bind_param("si", $hashed_password, $user['user_id']);
             
             if ($stmt->execute()) {

@@ -9,13 +9,13 @@ $current_page = basename($_SERVER['PHP_SELF']);
 $user_id = $_SESSION['user_id'];
 
 // ดึงข้อมูลผู้ใช้
-$stmt = $conn->prepare("SELECT * FROM users WHERE user_id = ?");
+$stmt = $mysqli->prepare("SELECT * FROM users WHERE user_id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 
 // ดึงข้อมูลแผนก
-$departments = $conn->query("SELECT * FROM departments ORDER BY name");
+$departments = $mysqli->query("SELECT * FROM departments ORDER BY name");
 
 // จัดการการอัปเดตข้อมูล
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 
                 // อัปเดตชื่อไฟล์ในฐานข้อมูล
-                $stmt = $conn->prepare("UPDATE users SET profile_image = ? WHERE user_id = ?");
+                $stmt = $mysqli->prepare("UPDATE users SET profile_image = ? WHERE user_id = ?");
                 $stmt->bind_param("si", $filename, $user_id);
                 if ($stmt->execute()) {
                     $_SESSION['profile_image'] = $filename;
@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($success) {
         // อัปเดตข้อมูลผู้ใช้
-        $stmt = $conn->prepare("UPDATE users SET username = ?, email = ?, department_id = ?, phone = ? WHERE user_id = ?");
+        $stmt = $mysqli->prepare("UPDATE users SET username = ?, email = ?, department_id = ?, phone = ? WHERE user_id = ?");
         $stmt->bind_param("ssisi", $username, $email, $department_id, $phone, $user_id);
         
         if ($stmt->execute()) {

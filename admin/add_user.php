@@ -12,8 +12,8 @@ if (isset($_GET['api'])) {
         
         try {
             // ตรวจสอบการเชื่อมต่อฐานข้อมูล
-            if ($conn->connect_error) {
-                throw new Exception("การเชื่อมต่อฐานข้อมูลล้มเหลว: " . $conn->connect_error);
+            if ($mysqli->connect_error) {
+                throw new Exception("การเชื่อมต่อฐานข้อมูลล้มเหลว: " . $mysqli->connect_error);
             }
 
             // ตรวจสอบข้อมูลที่จำเป็น
@@ -22,10 +22,10 @@ if (isset($_GET['api'])) {
             }
 
             // ทำความสะอาดข้อมูล
-            $username = $conn->real_escape_string(trim($_POST['username']));
-            $email = $conn->real_escape_string(trim($_POST['email']));
+            $username = $mysqli->real_escape_string(trim($_POST['username']));
+            $email = $mysqli->real_escape_string(trim($_POST['email']));
             $password = trim($_POST['password']);
-            $role = $conn->real_escape_string(trim($_POST['role']));
+            $role = $mysqli->real_escape_string(trim($_POST['role']));
 
             // ตรวจสอบความถูกต้องของข้อมูล
             if (empty($username) || empty($email) || empty($password) || empty($role)) {
@@ -50,7 +50,7 @@ if (isset($_GET['api'])) {
 
             // ตรวจสอบว่ามีชื่อผู้ใช้หรืออีเมลนี้ในระบบแล้วหรือไม่
             $check_query = "SELECT * FROM users WHERE username = '$username' OR email = '$email'";
-            $check_result = $conn->query($check_query);
+            $check_result = $mysqli->query($check_query);
 
             if ($check_result->num_rows > 0) {
                 throw new Exception("ชื่อผู้ใช้หรืออีเมลนี้มีในระบบแล้ว");
@@ -63,11 +63,11 @@ if (isset($_GET['api'])) {
             $insert_query = "INSERT INTO users (username, email, password, role, created_at) 
                            VALUES ('$username', '$email', '$hashed_password', '$role', NOW())";
 
-            if (!$conn->query($insert_query)) {
-                throw new Exception("ไม่สามารถเพิ่มผู้ใช้ได้: " . $conn->error);
+            if (!$mysqli->query($insert_query)) {
+                throw new Exception("ไม่สามารถเพิ่มผู้ใช้ได้: " . $mysqli->error);
             }
 
-            $new_user_id = $conn->insert_id;
+            $new_user_id = $mysqli->insert_id;
 
             // บันทึก activity log
             $admin_id = $_SESSION['user_id'];
@@ -75,9 +75,9 @@ if (isset($_GET['api'])) {
             $log_query = "INSERT INTO activity_logs (user_id, action, description, created_at) 
                          VALUES ($admin_id, 'add_user', '$log_description', NOW())";
             
-            if (!$conn->query($log_query)) {
+            if (!$mysqli->query($log_query)) {
                 // ถ้าไม่สามารถบันทึก log ได้ ให้แสดงข้อความแจ้งเตือนแต่ไม่ถือว่าเป็นข้อผิดพลาด
-                error_log("ไม่สามารถบันทึกประวัติการเพิ่มผู้ใช้ได้: " . $conn->error);
+                error_log("ไม่สามารถบันทึกประวัติการเพิ่มผู้ใช้ได้: " . $mysqli->error);
             }
 
             $response['success'] = true;

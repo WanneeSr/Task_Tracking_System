@@ -8,7 +8,7 @@ $employee_id = $_SESSION['user_id'];
 
 // ดึงข้อมูลพนักงาน
 $sql = "SELECT * FROM users WHERE user_id = ?";
-$stmt = $conn->prepare($sql);
+$stmt = $mysqli->prepare($sql);
 $stmt->bind_param("i", $employee_id);
 $stmt->execute();
 $employee = $stmt->get_result()->fetch_assoc();
@@ -42,12 +42,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // อัพเดททั้งข้อมูลและรหัสผ่าน
             $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
             $update_sql = "UPDATE users SET username = ?, email = ?, password = ? WHERE user_id = ?";
-            $stmt = $conn->prepare($update_sql);
+            $stmt = $mysqli->prepare($update_sql);
             $stmt->bind_param("sssi", $username, $email, $hashed_password, $employee_id);
         } else {
             // อัพเดทเฉพาะข้อมูล
             $update_sql = "UPDATE users SET username = ?, email = ? WHERE user_id = ?";
-            $stmt = $conn->prepare($update_sql);
+            $stmt = $mysqli->prepare($update_sql);
             $stmt->bind_param("ssi", $username, $email, $employee_id);
         }
 
@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: profile.php");
             exit();
         } else {
-            $errors[] = "เกิดข้อผิดพลาด: " . $conn->error;
+            $errors[] = "เกิดข้อผิดพลาด: " . $mysqli->error;
         }
     }
 }

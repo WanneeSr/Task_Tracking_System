@@ -9,7 +9,7 @@ $sql = "CREATE TABLE IF NOT EXISTS departments (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 )";
 
-if ($conn->query($sql) === TRUE) {
+if ($mysqli->query($sql) === TRUE) {
     echo "สร้างตาราง departments สำเร็จ";
     
     // เพิ่มข้อมูลตัวอย่าง
@@ -21,7 +21,7 @@ if ($conn->query($sql) === TRUE) {
     ];
 
     $insert_sql = "INSERT INTO departments (name, description) VALUES (?, ?)";
-    $stmt = $conn->prepare($insert_sql);
+    $stmt = $mysqli->prepare($insert_sql);
 
     foreach ($sample_departments as $dept) {
         $stmt->bind_param("ss", $dept['name'], $dept['description']);
@@ -30,23 +30,23 @@ if ($conn->query($sql) === TRUE) {
 
     echo "<br>เพิ่มข้อมูลตัวอย่างสำเร็จ";
 } else {
-    echo "เกิดข้อผิดพลาดในการสร้างตาราง: " . $conn->error;
+    echo "เกิดข้อผิดพลาดในการสร้างตาราง: " . $mysqli->error;
 }
 
 // เพิ่มคอลัมน์ department_id ในตาราง users ถ้ายังไม่มี
 $check_column = "SHOW COLUMNS FROM users LIKE 'department_id'";
-$result = $conn->query($check_column);
+$result = $mysqli->query($check_column);
 
 if ($result->num_rows == 0) {
     $alter_sql = "ALTER TABLE users ADD department_id INT,
                   ADD FOREIGN KEY (department_id) REFERENCES departments(department_id)";
     
-    if ($conn->query($alter_sql) === TRUE) {
+    if ($mysqli->query($alter_sql) === TRUE) {
         echo "<br>เพิ่มคอลัมน์ department_id ในตาราง users สำเร็จ";
     } else {
-        echo "<br>เกิดข้อผิดพลาดในการเพิ่มคอลัมน์: " . $conn->error;
+        echo "<br>เกิดข้อผิดพลาดในการเพิ่มคอลัมน์: " . $mysqli->error;
     }
 }
 
-$conn->close();
+$mysqli->close();
 ?> 

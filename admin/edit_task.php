@@ -14,7 +14,7 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 $task_id = $_GET['id'];
 
 // ดึงข้อมูลงานที่ต้องการแก้ไข
-$stmt = $conn->prepare("SELECT * FROM tasks WHERE task_id = ?");
+$stmt = $mysqli->prepare("SELECT * FROM tasks WHERE task_id = ?");
 $stmt->bind_param("i", $task_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -27,7 +27,7 @@ if (!$task) {
 }
 
 // ดึงรายชื่อผู้ใช้สำหรับ dropdown
-$users = $conn->query("SELECT user_id, username FROM users WHERE is_active = 1");
+$users = $mysqli->query("SELECT user_id, username FROM users WHERE is_active = 1");
 ?>
 
 <div class="container mt-4">

@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     try {
         // ตรวจสอบการเชื่อมต่อฐานข้อมูล
-        if ($conn->connect_error) {
+        if ($mysqli->connect_error) {
             throw new Exception("การเชื่อมต่อฐานข้อมูลล้มเหลว");
         }
 
@@ -21,9 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $user_id = intval($_POST['user_id']);
-        $username = $conn->real_escape_string(trim($_POST['username']));
-        $email = $conn->real_escape_string(trim($_POST['email']));
-        $role = $conn->real_escape_string(trim($_POST['role']));
+        $username = $mysqli->real_escape_string(trim($_POST['username']));
+        $email = $mysqli->real_escape_string(trim($_POST['email']));
+        $role = $mysqli->real_escape_string(trim($_POST['role']));
         $password = isset($_POST['password']) ? trim($_POST['password']) : '';
 
         // ตรวจสอบความถูกต้องของข้อมูล
@@ -44,14 +44,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // ตรวจสอบว่ามีชื่อผู้ใช้หรืออีเมลนี้ในระบบแล้วหรือไม่ (ยกเว้นผู้ใช้ปัจจุบัน)
         $check_query = "SELECT * FROM users WHERE (username = '$username' OR email = '$email') AND user_id != $user_id";
-        $check_result = $conn->query($check_query);
+        $check_result = $mysqli->query($check_query);
 
         if ($check_result->num_rows > 0) {
             throw new Exception("ชื่อผู้ใช้หรืออีเมลนี้มีในระบบแล้ว");
         }
 
         // เริ่ม transaction
-        $conn->begin_transaction();
+        $mysqli->begin_transaction();
 
         try {
             // อัปเดตข้อมูลผู้ใช้
@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                role = '$role' WHERE user_id = $user_id";
             }
 
-            if (!$conn->query($update_query)) {
+            if (!$mysqli->query($update_query)) {
                 throw new Exception("ไม่สามารถอัปเดตข้อมูลผู้ใช้ได้");
             }
 
@@ -80,19 +80,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $log_query = "INSERT INTO activity_logs (user_id, action, description, created_at) 
                          VALUES ($admin_id, 'update_user', '$log_description', NOW())";
             
-            if (!$conn->query($log_query)) {
+            if (!$mysqli->query($log_query)) {
                 throw new Exception("ไม่สามารถบันทึกประวัติการอัปเดตได้");
             }
 
             // ยืนยัน transaction
-            $conn->commit();
+            $mysqli->commit();
 
             $response['success'] = true;
             $response['message'] = "อัปเดตข้อมูลผู้ใช้สำเร็จ";
 
         } catch (Exception $e) {
             // ถ้าเกิดข้อผิดพลาด ให้ rollback การทำงานทั้งหมด
-            $conn->rollback();
+            $mysqli->rollback();
             throw $e;
         }
 

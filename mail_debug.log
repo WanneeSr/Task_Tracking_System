@@ -98,3 +98,8 @@
 <b>Warning</b>:  mail(): Failed to connect to mailserver at &quot;smtp.gmail.com&quot; port 465, verify your &quot;SMTP&quot; and &quot;smtp_port&quot; setting in php.ini or use ini_set() in <b>C:\xampp\htdocs\Task_Tracking_System\PHPMailer\src\PHPMailer.php</b> on line <b>216</b><br />
 
 
+2025-03-07 14:04:54
+<br />
+<b>Warning</b>:  mail(): Failed to connect to mailserver at &quot;smtp.gmail.com&quot; port 465, verify your &quot;SMTP&quot; and &quot;smtp_port&quot; setting in php.ini or use ini_set() in <b>C:\xampp\htdocs\Task_Tracking_System\PHPMailer\src\PHPMailer.php</b> on line <b>216</b><br />
+
+

@@ -8,7 +8,7 @@ $manager_id = $_SESSION['user_id'];
 
 // ดึงรายการพนักงานในทีม
 $employees_sql = "SELECT user_id, username, email FROM users WHERE role = 'employee'";
-$employees = $conn->query($employees_sql);
+$employees = $mysqli->query($employees_sql);
 
 // ดึงรายการงานทั้งหมดของทีม
 $tasks_sql = "
@@ -18,7 +18,7 @@ $tasks_sql = "
     WHERE t.created_by = ?
     ORDER BY t.created_at DESC";
 
-$stmt = $conn->prepare($tasks_sql);
+$stmt = $mysqli->prepare($tasks_sql);
 $stmt->bind_param("i", $manager_id);
 $stmt->execute();
 $tasks = $stmt->get_result();

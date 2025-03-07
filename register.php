@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // ตรวจสอบว่ามี username หรือ email ซ้ำหรือไม่
     if (empty($errors)) {
         $sql = "SELECT COUNT(*) as count FROM users WHERE username = ? OR email = ?";
-        $stmt = $conn->prepare($sql);
+        $stmt = $mysqli->prepare($sql);
         $stmt->bind_param("ss", $username, $email);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $role = 'employee'; // กำหนดค่าเริ่มต้นเป็น employee
         
         $sql = "INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)";
-        $stmt = $conn->prepare($sql);
+        $stmt = $mysqli->prepare($sql);
         $stmt->bind_param("ssss", $username, $email, $hashed_password, $role);
         
         if ($stmt->execute()) {
@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Location: login.php');
             exit();
         } else {
-            $errors[] = "เกิดข้อผิดพลาดในการบันทึกข้อมูล: " . $conn->error;
+            $errors[] = "เกิดข้อผิดพลาดในการบันทึกข้อมูล: " . $mysqli->error;
         }
     }
 }

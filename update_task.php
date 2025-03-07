@@ -23,7 +23,7 @@ $role = $_SESSION['role'];
 try {
     // ตรวจสอบว่างานนี้มีอยู่จริงและผู้ใช้มีสิทธิ์แก้ไข
     $check_sql = "SELECT created_by, assigned_to FROM tasks WHERE task_id = ?";
-    $check_stmt = $conn->prepare($check_sql);
+    $check_stmt = $mysqli->prepare($check_sql);
     $check_stmt->bind_param("i", $task_id);
     $check_stmt->execute();
     $result = $check_stmt->get_result();
@@ -69,7 +69,7 @@ try {
                        updated_at = CURRENT_TIMESTAMP
                    WHERE task_id = ?";
                    
-    $update_stmt = $conn->prepare($update_sql);
+    $update_stmt = $mysqli->prepare($update_sql);
     $update_stmt->bind_param("sssssii", 
         $title, 
         $description, 

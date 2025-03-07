@@ -14,7 +14,7 @@ $sql = "SELECT t.*, p.project_name, u.username as assigned_by_name
         LEFT JOIN users u ON t.created_by = u.user_id 
         WHERE t.assigned_to = ? 
         ORDER BY t.due_date ASC";
-$stmt = $conn->prepare($sql);
+$stmt = $mysqli->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();

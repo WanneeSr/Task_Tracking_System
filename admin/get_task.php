@@ -16,7 +16,7 @@ require_once '../auth.php';
 checkAdmin();
 
 // ตรวจสอบการเชื่อมต่อฐานข้อมูล
-if (!isset($conn)) {
+if (!isset($mysqli)) {
     echo json_encode(['error' => 'Database connection failed']);
     exit;
 }
@@ -36,10 +36,10 @@ try {
             LEFT JOIN users u ON t.assigned_to = u.user_id 
             WHERE t.task_id = ?";
             
-    $stmt = $conn->prepare($sql);
+    $stmt = $mysqli->prepare($sql);
     
     if (!$stmt) {
-        throw new Exception($conn->error);
+        throw new Exception($mysqli->error);
     }
     
     $stmt->bind_param("i", $task_id);
@@ -64,7 +64,7 @@ try {
 } catch (Exception $e) {
     echo json_encode(['error' => $e->getMessage()]);
 } finally {
-    if (isset($conn)) {
-        $conn->close();
+    if (isset($mysqli)) {
+        $mysqli->close();
     }
 } 
